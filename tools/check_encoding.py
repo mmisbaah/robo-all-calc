@@ -1,10 +1,14 @@
 """Scan project text files for mojibake introduced by PowerShell round-trips."""
 import glob
 import io
+import os
 import re
 import sys
 
-ROOT = r'E:\OpenCode\Apps\calculator'
+# Resolve relative to this file so the check works in any checkout, on any
+# platform, and in CI. A hardcoded absolute path would silently pass on the
+# author's machine while failing (or scanning nothing) everywhere else.
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 EXT = ('.js', '.html', '.css', '.json', '.md', '.py', '.yml', '.svg')
 
 # Sequences that only appear when UTF-8 is decoded as cp1252/latin-1.

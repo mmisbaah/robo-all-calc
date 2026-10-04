@@ -4,11 +4,14 @@ Verifies every element the JS references actually exists, that tag nesting is
 balanced, and that no attribute value has been clipped by an encoding mishap.
 """
 import io
+import os
 import re
 import sys
 
-ROOT = r'E:\OpenCode\Apps\calculator'
-INDEX = ROOT + r'\index.html'
+# Resolve relative to this file so the check works in any checkout, on any
+# platform, and in CI.
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+INDEX = os.path.join(ROOT, 'index.html')
 
 VOID = {'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link',
         'meta', 'param', 'source', 'track', 'wbr'}

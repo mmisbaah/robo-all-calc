@@ -5,6 +5,7 @@ Names come from @fawazahmed0/currency-api currencies.json, falling back to
 a hand-curated table for anything the source lacks.
 """
 import json
+import os
 import urllib.request
 
 CODES_URL = 'https://open.er-api.com/v6/latest/USD'
@@ -73,7 +74,9 @@ def main():
     lines.append('if (typeof module !== \'undefined\' && module.exports) module.exports = CURRENCY_NAMES;')
     lines.append('')
 
-    out = r'E:\OpenCode\Apps\calculator\js\currency-names.js'
+    out = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        'js', 'currency-names.js')
     with open(out, 'w', encoding='utf-8', newline='\n') as f:
         f.write('\n'.join(lines))
 

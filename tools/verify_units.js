@@ -1,5 +1,6 @@
 /** Sanity-check conversion factors against authoritative values. */
-const U = require('E:/OpenCode/Apps/calculator/js/units.js');
+const path = require('path');
+const U = require(path.join(__dirname, '..', 'js', 'units.js'));
 
 /**
  * @param v value, f from unit, t to unit, cat category
