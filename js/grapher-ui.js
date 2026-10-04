@@ -85,6 +85,17 @@
 
   /* Plot colors per app theme. */
   const GRAPH_THEMES = {
+    lagoon: {
+      bgColor: '#eef8f5',
+      gridColor: 'rgba(8, 109, 117, 0.13)',
+      axisColor: '#086d75',
+      labelColor: '#46636e',
+      crosshairColor: 'rgba(179, 66, 43, 0.55)',
+      panelBg: 'rgba(255, 255, 255, 0.95)',
+      panelBorder: 'rgba(8, 109, 117, 0.28)',
+      panelText: '#123e52',
+      panelMuted: '#46636e',
+    },
     robot: {
       bgColor: '#050d13',
       gridColor: 'rgba(0, 217, 255, 0.10)',

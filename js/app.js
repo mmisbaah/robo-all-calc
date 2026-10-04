@@ -124,24 +124,39 @@
   });
 
   /* Theme order is the cycle order of the theme button and the T shortcut. */
-  const THEME_ORDER = ['robot', 'dark', 'oled', 'light'];
+  const THEME_ORDER = ['robot', 'lagoon', 'dark', 'oled', 'light'];
   const THEME_ICONS = {
     robot: '\uD83E\uDD16',
+    lagoon: '\uD83C\uDF0A',
     dark: '\uD83C\uDF19',
     oled: '\u26AB',
     light: '\u2600\uFE0F',
   };
   const THEME_COLORS = {
     robot: '#04121a',
+    lagoon: '#e8f6f2',
     dark: '#1e1e2e',
     oled: '#000000',
     light: '#ffffff',
   };
+  /**
+   * Themes that share the robotic *structure* (chamfered keys, instrumentation,
+   * monospace) rather than only a palette. styles.css scopes those rules to
+   * [data-look="tech"], so a new robotic variant is one variable block instead
+   * of a copy of the geometry. 'robot' and 'lagoon' are the two of them.
+   */
+  const TECH_THEMES = ['robot', 'lagoon'];
   const DEFAULT_THEME = 'robot';
 
   function applyTheme(theme) {
     const next = THEME_ORDER.indexOf(theme) === -1 ? DEFAULT_THEME : theme;
-    document.documentElement.setAttribute('data-theme', next);
+    const root = document.documentElement;
+    root.setAttribute('data-theme', next);
+    if (TECH_THEMES.indexOf(next) !== -1) {
+      root.setAttribute('data-look', 'tech');
+    } else {
+      root.removeAttribute('data-look');
+    }
     themeBtnEl.textContent = THEME_ICONS[next] || THEME_ICONS[DEFAULT_THEME];
     themeBtnEl.setAttribute('aria-label', 'Switch theme (current: ' + next + ')');
     storage.set(LS_KEYS.theme, next);

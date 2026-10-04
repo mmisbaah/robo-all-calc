@@ -106,6 +106,78 @@
   --r-chamfer-sm: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
 }
 
+/* Robotic lagoon — the atollingo.com palette with robotic instrumentation.
+ *
+ * Every colour here is lifted verbatim from the atollingo brand (OceanHub,
+ * app/globals.css): ink #123e52, teal #086d75, mint #e2f5ef, coral #b3422b,
+ * sand #fff5d9, line #c4ddd7, focus #ad421e. They are used unaltered because
+ * that palette was designed for a light background, which this theme is. A dark
+ * lagoon would have required lifting the brand hues: coral on a near-black card
+ * measures only 2.93:1 and teal 2.71:1.
+ *
+ * All measured text pairs clear WCAG AA on their own surfaces:
+ *   ink/card 11.43  muted/card 6.42  key 10.49  op 6.39  fn 7.01
+ *   white/accent 6.08  white/coral 5.63  teal/card 6.08
+ *
+ * Structure comes from the shared [data-look="tech"] rules, so this block is
+ * palette only; the lagoon-specific touches (caustics, sonar sweep) are below. */
+[data-theme="lagoon"] {
+  --page-grad-1: #dff2ec;
+  --page-grad-2: #cfe9ee;
+  --card: #ffffff;
+  --display-bg: #eef8f5;
+  --text: #123e52;          /* brand ink */
+  --muted: #46636e;
+  --key: #eef7f5;
+  --key-text: #123e52;
+  --fn: #e2f5ef;            /* brand mint */
+  --fn-text: #0a5a60;
+  --op: #d9f0ea;
+  --op-text: #075d63;
+  --accent: #086d75;        /* brand teal */
+  --accent-text: #ffffff;
+  --danger: #b3422b;        /* brand coral */
+  --panel: #fbfefd;
+  --hover: #dff0ec;
+  --focus: #ad421e;         /* brand focus */
+  --shadow: rgba(18, 62, 82, 0.22);
+  --border: #c4ddd7;        /* brand line */
+
+  /* lagoon accents */
+  --r-cyan: #086d75;
+  --r-amber: #b3422b;
+  --r-mint: #e2f5ef;
+  --r-sand: #fff5d9;
+  --r-font: 'Consolas', 'SF Mono', 'Roboto Mono', 'Menlo', 'DejaVu Sans Mono', monospace;
+  --r-chamfer: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  --r-chamfer-sm: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+
+  /* Role colours. Every lagoon-specific surface goes through one of these
+     rather than a literal, because a literal silently ignores the high
+     contrast toggle. [data-hc="on"] redefines all of them below. */
+  --l-display: #eef8f5;
+  --l-panel: #fbfefd;
+  --l-equals-bg: #fff5d9;      /* brand sand */
+  --l-equals-border: #b3422b;  /* brand coral */
+  --l-equals-text: #7a2a19;
+  --l-badge-bg: #fff5d9;
+  --l-badge-border: #b3422b;
+  --l-badge-text: #7a2a19;
+  --l-hint-bg: #fff5d9;
+  --l-hint-text: #7a2a19;
+  --l-result-bg: #e2f5ef;      /* brand mint */
+  --l-result-text: #0a4a52;
+  --l-solid-bg: #086d75;       /* brand teal, for solid buttons */
+  --l-solid-text: #ffffff;
+  --l-ink-strong: #0a2f3d;
+  --l-marker: #b3422b;
+  --l-bracket: #086d75;
+  --l-scroll-thumb: #b8d9d3;
+  --l-key-top: rgba(255, 255, 255, 0.85);
+  --l-op-tint: rgba(8, 109, 117, 0.14);
+  --l-fn-tint: rgba(8, 109, 117, 0.13);
+}
+
 /* High contrast overrides — applied for any theme when data-hc="on" */
 [data-hc="on"] {
   --card: #000000;
@@ -128,6 +200,30 @@
   --hover: #333333;
   --focus: #ffff00;
   --border: #ffffff;
+
+  /* Lagoon roles. Without these the lagoon theme's literals would quietly
+     ignore the toggle, which is exactly the bug the role variables prevent. */
+  --l-display: #000000;
+  --l-panel: #000000;
+  --l-equals-bg: #000000;
+  --l-equals-border: #ffff00;
+  --l-equals-text: #ffff00;
+  --l-badge-bg: #000000;
+  --l-badge-border: #ffff00;
+  --l-badge-text: #ffff00;
+  --l-hint-bg: #000000;
+  --l-hint-text: #ffff00;
+  --l-result-bg: #000000;
+  --l-result-text: #00ffff;
+  --l-solid-bg: #ffff00;
+  --l-solid-text: #000000;
+  --l-ink-strong: #ffffff;
+  --l-marker: #ffff00;
+  --l-bracket: #ffff00;
+  --l-scroll-thumb: #4a4a4a;
+  --l-key-top: rgba(255, 255, 255, 0.14);
+  --l-op-tint: rgba(0, 255, 255, 0.18);
+  --l-fn-tint: rgba(0, 255, 255, 0.16);
 }
 
 /* ---------------- base ---------------- */
@@ -1347,7 +1443,7 @@ button:focus-visible,
       therefore use filter: drop-shadow(), which follows the clip.
    ============================================================ */
 
-[data-theme="robot"] body {
+[data-look="tech"] body {
   font-family: var(--r-font);
   background-color: var(--page-grad-1);
   background-image:
@@ -1361,7 +1457,7 @@ button:focus-visible,
 
 /* CRT scanlines over the whole viewport. Above every panel so the effect is
    uniform; pointer-events:none keeps the UI fully interactive. */
-[data-theme="robot"] body::after {
+[data-look="tech"] body::after {
   content: '';
   position: fixed;
   inset: 0;
@@ -1376,7 +1472,7 @@ button:focus-visible,
 
 /* Card: near-square corners plus four corner brackets drawn as background
    gradients, which avoids extra DOM and survives the clip. */
-[data-theme="robot"] .calculator {
+[data-look="tech"] .calculator {
   border-radius: 2px;
   border: 1px solid var(--border);
   background-color: var(--card);
@@ -1406,7 +1502,7 @@ button:focus-visible,
 }
 
 /* ---------------- toolbar ---------------- */
-[data-theme="robot"] .tool {
+[data-look="tech"] .tool {
   clip-path: var(--r-chamfer-sm);
   border: 1px solid var(--border);
   background: var(--key);
@@ -1415,29 +1511,29 @@ button:focus-visible,
   letter-spacing: 0.04em;
 }
 
-[data-theme="robot"] .tool:hover {
+[data-look="tech"] .tool:hover {
   filter: none;
   color: var(--r-cyan);
   border-color: var(--r-cyan);
 }
 
-[data-theme="robot"] .tool[aria-pressed="true"] {
+[data-look="tech"] .tool[aria-pressed="true"] {
   background: var(--op);
   color: var(--op-text);
   border-color: var(--r-cyan);
   box-shadow: inset 0 0 12px rgba(0, 217, 255, 0.30);
 }
 
-[data-theme="robot"] .tool-group + .tool-group {
+[data-look="tech"] .tool-group + .tool-group {
   border-left: 1px dashed var(--border);
 }
 
 /* The key-size button reads as a text glyph; uppercasing turns "Aa" into "AA",
    which loses its meaning. */
-[data-theme="robot"] #btn-density { text-transform: none; }
+[data-look="tech"] #btn-density { text-transform: none; }
 
 /* ---------------- display ---------------- */
-[data-theme="robot"] .display {
+[data-look="tech"] .display {
   position: relative;
   border: 1px solid var(--border);
   border-radius: 2px;
@@ -1448,7 +1544,7 @@ button:focus-visible,
 }
 
 /* Slow sweep, like a refreshing readout. */
-[data-theme="robot"] .display::after {
+[data-look="tech"] .display::after {
   content: '';
   position: absolute;
   left: 0;
@@ -1464,7 +1560,7 @@ button:focus-visible,
   to { top: 105%; }
 }
 
-[data-theme="robot"] .current {
+[data-look="tech"] .current {
   font-family: var(--r-font);
   font-weight: 500;
   color: var(--text);
@@ -1472,13 +1568,13 @@ button:focus-visible,
   letter-spacing: 0.02em;
 }
 
-[data-theme="robot"] .history-line {
+[data-look="tech"] .history-line {
   font-family: var(--r-font);
   font-size: 13px;
   color: var(--muted);
 }
 
-[data-theme="robot"] .mem-badge {
+[data-look="tech"] .mem-badge {
   clip-path: var(--r-chamfer-sm);
   border-radius: 0;
   background: var(--r-amber);
@@ -1487,7 +1583,7 @@ button:focus-visible,
 }
 
 /* ---------------- keys ---------------- */
-[data-theme="robot"] .pad button {
+[data-look="tech"] .pad button {
   clip-path: var(--r-chamfer);
   border: 1px solid var(--border);
   background-color: var(--key);
@@ -1497,21 +1593,21 @@ button:focus-visible,
   letter-spacing: 0.02em;
 }
 
-[data-theme="robot"] .pad button:hover {
+[data-look="tech"] .pad button:hover {
   filter: drop-shadow(0 0 7px rgba(0, 217, 255, 0.50));
   border-color: var(--r-cyan);
   color: #ffffff;
 }
 
-[data-theme="robot"] .pad button:active { filter: brightness(1.35); }
+[data-look="tech"] .pad button:active { filter: brightness(1.35); }
 
-[data-theme="robot"] .pad button.op {
+[data-look="tech"] .pad button.op {
   background-color: var(--op);
   background-image: linear-gradient(180deg, rgba(0, 217, 255, 0.16), transparent 60%);
   color: var(--op-text);
 }
 
-[data-theme="robot"] .pad button.equals {
+[data-look="tech"] .pad button.equals {
   background-color: var(--r-amber);
   background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.30), transparent 65%);
   border-color: var(--r-amber);
@@ -1519,25 +1615,25 @@ button:focus-visible,
   font-weight: 700;
 }
 
-[data-theme="robot"] .pad button.equals:hover {
+[data-look="tech"] .pad button.equals:hover {
   filter: drop-shadow(0 0 10px rgba(255, 176, 32, 0.75));
   border-color: #ffd27a;
 }
 
-[data-theme="robot"] .pad button.danger {
+[data-look="tech"] .pad button.danger {
   background-color: var(--danger);
   border-color: var(--danger);
   color: #ffffff;
 }
 
-[data-theme="robot"] .pad.sci button.fn {
+[data-look="tech"] .pad.sci button.fn {
   background-color: var(--fn);
   background-image: linear-gradient(180deg, rgba(70, 224, 200, 0.16), transparent 60%);
   color: var(--fn-text);
 }
 
 /* Transparent border keeps the row from shifting when the key lights up. */
-[data-theme="robot"] .pad.memory button.mem {
+[data-look="tech"] .pad.memory button.mem {
   clip-path: var(--r-chamfer-sm);
   border: 1px solid transparent;
   background: transparent;
@@ -1545,19 +1641,19 @@ button:focus-visible,
   font-family: var(--r-font);
 }
 
-[data-theme="robot"] .pad.memory button.mem:hover {
+[data-look="tech"] .pad.memory button.mem:hover {
   background: var(--key);
   border-color: var(--border);
   color: var(--op-text);
 }
 
 /* ---------------- inputs & selects ---------------- */
-[data-theme="robot"] .fn-text,
-[data-theme="robot"] .fn-mode,
-[data-theme="robot"] .fn-t,
-[data-theme="robot"] .table-step-label input,
-[data-theme="robot"] .range-row input,
-[data-theme="robot"] .integrate-row input {
+[data-look="tech"] .fn-text,
+[data-look="tech"] .fn-mode,
+[data-look="tech"] .fn-t,
+[data-look="tech"] .table-step-label input,
+[data-look="tech"] .range-row input,
+[data-look="tech"] .integrate-row input {
   border-radius: 2px;
   border: 1px solid var(--border);
   background-color: var(--display-bg);
@@ -1565,44 +1661,44 @@ button:focus-visible,
   font-family: var(--r-font);
 }
 
-[data-theme="robot"] .fn-text:focus,
-[data-theme="robot"] .fn-mode:focus,
-[data-theme="robot"] .fn-t:focus,
-[data-theme="robot"] .table-step-label input:focus,
-[data-theme="robot"] .range-row input:focus,
-[data-theme="robot"] .integrate-row input:focus {
+[data-look="tech"] .fn-text:focus,
+[data-look="tech"] .fn-mode:focus,
+[data-look="tech"] .fn-t:focus,
+[data-look="tech"] .table-step-label input:focus,
+[data-look="tech"] .range-row input:focus,
+[data-look="tech"] .integrate-row input:focus {
   border-color: var(--r-cyan);
   box-shadow: 0 0 0 1px var(--r-cyan), 0 0 14px rgba(0, 217, 255, 0.30);
   outline: none;
 }
 
 /* Native dropdown lists render with OS colours unless told otherwise. */
-[data-theme="robot"] .fn-mode option,
-[data-theme="robot"] .fn-text option {
+[data-look="tech"] .fn-mode option,
+[data-look="tech"] .fn-text option {
   background: var(--card);
   color: var(--text);
 }
 
-[data-theme="robot"] .fn-input-row {
+[data-look="tech"] .fn-input-row {
   border: 1px solid transparent;
   background: var(--display-bg);
 }
 
-[data-theme="robot"] .fn-input-row:hover {
+[data-look="tech"] .fn-input-row:hover {
   border-color: var(--border);
   background: var(--hover);
 }
 
 /* ---------------- panels ---------------- */
-[data-theme="robot"] .history-panel,
-[data-theme="robot"] .table-panel {
+[data-look="tech"] .history-panel,
+[data-look="tech"] .table-panel {
   border-radius: 2px;
   border: 1px solid var(--border);
   background: var(--panel);
   box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.45), 0 10px 40px var(--shadow);
 }
 
-[data-theme="robot"] .history-head {
+[data-look="tech"] .history-head {
   padding-bottom: 8px;
   border-bottom: 1px solid var(--border);
   font-family: var(--r-font);
@@ -1611,7 +1707,7 @@ button:focus-visible,
   font-size: 14px;
 }
 
-[data-theme="robot"] .history-head button {
+[data-look="tech"] .history-head button {
   clip-path: var(--r-chamfer-sm);
   border: 1px solid var(--border);
   border-radius: 0;
@@ -1625,30 +1721,30 @@ button:focus-visible,
   flex: 0 0 auto;
 }
 
-[data-theme="robot"] .history-head .back {
+[data-look="tech"] .history-head .back {
   background: var(--op);
   color: var(--op-text);
   border-color: var(--r-cyan);
   font-weight: 700;
 }
 
-[data-theme="robot"] .history-item {
+[data-look="tech"] .history-item {
   border-radius: 2px;
   border: 1px solid transparent;
   font-family: var(--r-font);
 }
 
-[data-theme="robot"] .history-item:hover {
+[data-look="tech"] .history-item:hover {
   background: var(--hover);
   border-color: var(--border);
 }
 
-[data-theme="robot"] .history-item .res {
+[data-look="tech"] .history-item .res {
   color: var(--text);
   text-shadow: 0 0 10px rgba(0, 217, 255, 0.30);
 }
 
-[data-theme="robot"] #values-table th {
+[data-look="tech"] #values-table th {
   background: var(--key);
   color: var(--op-text);
   font-family: var(--r-font);
@@ -1657,7 +1753,7 @@ button:focus-visible,
 }
 
 /* ---------------- converter ---------------- */
-[data-theme="robot"] .convert-result {
+[data-look="tech"] .convert-result {
   clip-path: var(--r-chamfer-sm);
   border-radius: 0;
   border: 1px solid var(--r-cyan);
@@ -1667,7 +1763,7 @@ button:focus-visible,
   text-shadow: 0 0 10px rgba(0, 217, 255, 0.45);
 }
 
-[data-theme="robot"] .convert-swap {
+[data-look="tech"] .convert-swap {
   border-radius: 0;
   clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
   border: 1px solid var(--r-cyan);
@@ -1675,26 +1771,26 @@ button:focus-visible,
   color: var(--op-text);
 }
 
-[data-theme="robot"] .convert-swap:hover {
+[data-look="tech"] .convert-swap:hover {
   background: var(--hover);
   filter: drop-shadow(0 0 8px rgba(0, 217, 255, 0.6));
 }
 
-[data-theme="robot"] .convert-hint {
+[data-look="tech"] .convert-hint {
   background: var(--display-bg);
   border-left: 2px solid var(--r-amber);
   color: var(--op-text);
   font-family: var(--r-font);
 }
 
-[data-theme="robot"] .fx-status {
+[data-look="tech"] .fx-status {
   border-radius: 2px;
   border: 1px solid var(--border);
   background: var(--display-bg);
   font-family: var(--r-font);
 }
 
-[data-theme="robot"] .fx-refresh {
+[data-look="tech"] .fx-refresh {
   border-radius: 0;
   clip-path: var(--r-chamfer-sm);
   border: 1px solid var(--r-cyan);
@@ -1705,7 +1801,7 @@ button:focus-visible,
 }
 
 /* ---------------- symbolic solver ---------------- */
-[data-theme="robot"] .cas-go {
+[data-look="tech"] .cas-go {
   clip-path: var(--r-chamfer-sm);
   border-radius: 0;
   border: 1px solid var(--r-cyan);
@@ -1715,29 +1811,29 @@ button:focus-visible,
   letter-spacing: 0.10em;
 }
 
-[data-theme="robot"] .cas-go:hover {
+[data-look="tech"] .cas-go:hover {
   filter: drop-shadow(0 0 10px rgba(0, 217, 255, 0.55));
 }
 
-[data-theme="robot"] .cas-example {
+[data-look="tech"] .cas-example {
   clip-path: var(--r-chamfer-sm);
   border-radius: 0;
   background: var(--key);
   font-family: var(--r-font);
 }
 
-[data-theme="robot"] .cas-example:hover {
+[data-look="tech"] .cas-example:hover {
   background: var(--hover);
   color: var(--r-cyan);
 }
 
-[data-theme="robot"] .cas-result {
+[data-look="tech"] .cas-result {
   border-radius: 2px;
   border: 1px solid var(--border);
   background: var(--display-bg);
 }
 
-[data-theme="robot"] .cas-label {
+[data-look="tech"] .cas-label {
   font-family: var(--r-font);
   color: var(--r-cyan);
   letter-spacing: 0.12em;
@@ -1745,22 +1841,22 @@ button:focus-visible,
 
 /* Math stays in a serif face: it aids reading of fractions and exponents,
    which a monospace grid would make harder to scan. */
-[data-theme="robot"] .cas-value {
+[data-look="tech"] .cas-value {
   color: var(--text);
   text-shadow: 0 0 12px rgba(0, 217, 255, 0.25);
 }
 
-[data-theme="robot"] .cas-note {
+[data-look="tech"] .cas-note {
   font-family: var(--r-font);
 }
 
-[data-theme="robot"] .cas-note::before {
+[data-look="tech"] .cas-note::before {
   content: '\25B8';
   color: var(--r-amber);
 }
 
 /* ---------------- graph view ---------------- */
-[data-theme="robot"] #graph-view .toolbar button {
+[data-look="tech"] #graph-view .toolbar button {
   clip-path: var(--r-chamfer-sm);
   border: 1px solid var(--border);
   border-radius: 0;
@@ -1769,20 +1865,20 @@ button:focus-visible,
   font-family: var(--r-font);
 }
 
-[data-theme="robot"] #graph-view .toolbar button:hover {
+[data-look="tech"] #graph-view .toolbar button:hover {
   filter: none;
   color: var(--r-cyan);
   border-color: var(--r-cyan);
 }
 
-[data-theme="robot"] #graph-view .toolbar .back {
+[data-look="tech"] #graph-view .toolbar .back {
   background: var(--op);
   color: var(--op-text);
   border-color: var(--r-cyan);
   font-weight: 700;
 }
 
-[data-theme="robot"] .graph-title {
+[data-look="tech"] .graph-title {
   font-family: var(--r-font);
   text-transform: uppercase;
   letter-spacing: 0.10em;
@@ -1791,25 +1887,25 @@ button:focus-visible,
   text-shadow: 0 0 12px rgba(0, 217, 255, 0.35);
 }
 
-[data-theme="robot"] .graph-canvas-wrap {
+[data-look="tech"] .graph-canvas-wrap {
   border: 1px solid var(--border);
   border-radius: 2px;
   background: var(--display-bg);
   box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.6);
 }
 
-[data-theme="robot"] #graph-canvas {
+[data-look="tech"] #graph-canvas {
   border-radius: 0;
 }
 
-[data-theme="robot"] .graph-section {
+[data-look="tech"] .graph-section {
   border-radius: 2px;
   border: 1px solid var(--border);
   background: var(--panel);
   box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.4);
 }
 
-[data-theme="robot"] .graph-section h3 {
+[data-look="tech"] .graph-section h3 {
   font-family: var(--r-font);
   color: var(--r-cyan);
   letter-spacing: 0.14em;
@@ -1817,7 +1913,7 @@ button:focus-visible,
   padding-bottom: 8px;
 }
 
-[data-theme="robot"] .graph-section h3::before {
+[data-look="tech"] .graph-section h3::before {
   width: 10px;
   height: 10px;
   background: var(--r-amber);
@@ -1825,32 +1921,32 @@ button:focus-visible,
   clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }
 
-[data-theme="robot"] .fn-toggle,
-[data-theme="robot"] .fn-delete,
-[data-theme="robot"] .add-function-btn,
-[data-theme="robot"] .template-btn {
+[data-look="tech"] .fn-toggle,
+[data-look="tech"] .fn-delete,
+[data-look="tech"] .add-function-btn,
+[data-look="tech"] .template-btn {
   clip-path: var(--r-chamfer-sm);
   border-radius: 0;
   font-family: var(--r-font);
 }
 
-[data-theme="robot"] .fn-toggle {
+[data-look="tech"] .fn-toggle {
   border: 1px solid var(--border);
   background: var(--key);
 }
 
-[data-theme="robot"] .fn-toggle:hover {
+[data-look="tech"] .fn-toggle:hover {
   filter: none;
   border-color: var(--r-cyan);
   color: var(--r-cyan);
 }
 
-[data-theme="robot"] .fn-delete {
+[data-look="tech"] .fn-delete {
   border: 1px solid var(--danger);
   background: transparent;
 }
 
-[data-theme="robot"] .add-function-btn {
+[data-look="tech"] .add-function-btn {
   border: 1px dashed var(--border);
   background: transparent;
   color: var(--muted);
@@ -1858,24 +1954,24 @@ button:focus-visible,
   letter-spacing: 0.08em;
 }
 
-[data-theme="robot"] .add-function-btn:hover:not(:disabled) {
+[data-look="tech"] .add-function-btn:hover:not(:disabled) {
   border-color: var(--r-cyan);
   color: var(--r-cyan);
   background: var(--key);
 }
 
-[data-theme="robot"] .template-btn {
+[data-look="tech"] .template-btn {
   border: 1px solid var(--border);
   background: var(--key);
 }
 
-[data-theme="robot"] .template-btn:hover {
+[data-look="tech"] .template-btn:hover {
   border-color: var(--r-cyan);
   color: var(--r-cyan);
 }
 
 /* Section action buttons (Find Root, Integrate, ...). */
-[data-theme="robot"] .graph-controls :where(button:not(.fn-swatch):not(.fn-toggle):not(.fn-delete):not(.template-btn):not(.add-function-btn)) {
+[data-look="tech"] .graph-controls :where(button:not(.fn-swatch):not(.fn-toggle):not(.fn-delete):not(.template-btn):not(.add-function-btn)) {
   clip-path: var(--r-chamfer-sm);
   border: 1px solid var(--r-cyan);
   border-radius: 0;
@@ -1887,33 +1983,251 @@ button:focus-visible,
   box-shadow: none;
 }
 
-[data-theme="robot"] .graph-controls :where(button:not(.fn-swatch):not(.fn-toggle):not(.fn-delete):not(.template-btn):not(.add-function-btn)):hover {
+[data-look="tech"] .graph-controls :where(button:not(.fn-swatch):not(.fn-toggle):not(.fn-delete):not(.template-btn):not(.add-function-btn)):hover {
   filter: drop-shadow(0 0 9px rgba(0, 217, 255, 0.55));
   transform: none;
 }
 
-[data-theme="robot"] .result {
+[data-look="tech"] .result {
   border-radius: 2px;
   font-family: var(--r-font);
 }
 
 /* ---------------- scrollbars ---------------- */
-[data-theme="robot"] ::-webkit-scrollbar { width: 10px; height: 10px; }
-[data-theme="robot"] ::-webkit-scrollbar-track { background: var(--display-bg); }
-[data-theme="robot"] ::-webkit-scrollbar-thumb {
+[data-look="tech"] ::-webkit-scrollbar { width: 10px; height: 10px; }
+[data-look="tech"] ::-webkit-scrollbar-track { background: var(--display-bg); }
+[data-look="tech"] ::-webkit-scrollbar-thumb {
   background: var(--op);
   border: 1px solid var(--border);
 }
-[data-theme="robot"] ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+[data-look="tech"] ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-[data-theme="robot"] {
+[data-look="tech"] {
   scrollbar-color: var(--accent) var(--display-bg);
   scrollbar-width: thin;
 }
 
 /* ---------------- motion preferences ---------------- */
 @media (prefers-reduced-motion: reduce) {
-  [data-theme="robot"] .display::after { animation: none; display: none; }
-  [data-theme="robot"] .pad button:active,
-  [data-theme="robot"] .template-btn:hover { transform: none; }
+  [data-look="tech"] .display::after { animation: none; display: none; }
+  [data-look="tech"] .pad button:active,
+  [data-look="tech"] .template-btn:hover { transform: none; }
 }
+
+/* ============================================================
+   LAGOON-SPECIFIC TOUCHES
+   ============================================================
+   The robotic geometry comes from [data-look="tech"]. These rules only apply to
+   the lagoon palette and adjust what would look wrong on a light background:
+   the dark grid becomes water caustics, the CRT scanlines become a faint
+   ripple, and the glows are replaced by soft lagoon light.
+   ============================================================ */
+
+/* Caustic light on the water instead of the dark theme's technical grid. */
+[data-theme="lagoon"] body {
+  background-color: #dff2ec;
+  background-image:
+    repeating-linear-gradient(115deg,
+      rgba(8, 109, 117, 0.055) 0 2px,
+      transparent 2px 26px),
+    repeating-linear-gradient(65deg,
+      rgba(8, 109, 117, 0.045) 0 2px,
+      transparent 2px 34px),
+    radial-gradient(ellipse at 18% 8%, rgba(255, 245, 217, 0.75), transparent 55%),
+    radial-gradient(ellipse at 82% 88%, rgba(142, 214, 214, 0.45), transparent 58%),
+    linear-gradient(160deg, #e8f6f2 0%, #cfe9ee 100%);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+  background-attachment: fixed;
+}
+
+/* A ripple rather than CRT scanlines: dark bands read as dirt on a light UI. */
+[data-theme="lagoon"] body::after {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(8, 109, 117, 0) 0 3px,
+    rgba(8, 109, 117, 0.045) 3px 6px
+  );
+}
+
+/* Light surfaces do not need the dark theme's heavy inner shadow. */
+[data-theme="lagoon"] .calculator {
+  background-image:
+    linear-gradient(var(--l-bracket), var(--l-bracket)),
+    linear-gradient(var(--l-bracket), var(--l-bracket)),
+    linear-gradient(var(--l-bracket), var(--l-bracket)),
+    linear-gradient(var(--l-bracket), var(--l-bracket)),
+    linear-gradient(var(--l-bracket), var(--l-bracket)),
+    linear-gradient(var(--l-bracket), var(--l-bracket)),
+    linear-gradient(var(--l-bracket), var(--l-bracket)),
+    linear-gradient(var(--l-bracket), var(--l-bracket)),
+    linear-gradient(180deg, rgba(226, 245, 239, 0.85), transparent 34%);
+  box-shadow:
+    inset 0 0 40px rgba(142, 214, 214, 0.18),
+    0 0 20px rgba(8, 109, 117, 0.10),
+    0 18px 44px var(--shadow);
+}
+
+/* Sonar sweep: teal light passing across the readout. */
+[data-theme="lagoon"] .display::after {
+  background: linear-gradient(180deg,
+    transparent, rgba(8, 109, 117, 0.16), transparent);
+}
+
+/* Keys gain a soft lagoon tint instead of a neon edge. */
+[data-theme="lagoon"] .pad button {
+  background-image: linear-gradient(180deg, var(--l-key-top), transparent 60%);
+}
+
+[data-theme="lagoon"] .pad button.op {
+  background-image: linear-gradient(180deg, var(--l-op-tint), transparent 62%);
+}
+
+[data-theme="lagoon"] .pad button.equals {
+  background-color: var(--l-equals-bg);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.9), transparent 62%);
+  border-color: var(--l-equals-border);
+  color: var(--l-equals-text);
+}
+
+[data-theme="lagoon"] .pad button.equals:hover {
+  filter: drop-shadow(0 0 8px rgba(179, 66, 43, 0.35));
+  border-color: var(--l-equals-border);
+  color: var(--l-equals-text);
+}
+
+[data-theme="lagoon"] .pad.sci button.fn {
+  background-image: linear-gradient(180deg, var(--l-fn-tint), transparent 62%);
+}
+
+/* The memory badge takes the brand sand, which reads as a lit indicator. */
+[data-theme="lagoon"] .mem-badge {
+  background: var(--l-badge-bg);
+  color: var(--l-badge-text);
+  border: 1px solid var(--l-badge-border);
+}
+
+/* Focus and glow colours suit a light surface. */
+[data-theme="lagoon"] .tool:hover,
+[data-theme="lagoon"] .fn-toggle:hover,
+[data-theme="lagoon"] .template-btn:hover,
+[data-theme="lagoon"] .add-function-btn:hover:not(:disabled),
+[data-theme="lagoon"] #graph-view .toolbar button:hover,
+[data-theme="lagoon"] .cas-example:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+[data-theme="lagoon"] .pad button:hover {
+  filter: drop-shadow(0 0 6px rgba(8, 109, 117, 0.28));
+  border-color: var(--accent);
+  color: var(--l-ink-strong);
+}
+
+[data-theme="lagoon"] .tool[aria-pressed="true"] {
+  background: var(--op);
+  color: var(--op-text);
+  border-color: var(--accent);
+  box-shadow: inset 0 0 10px rgba(8, 109, 117, 0.18);
+}
+
+[data-theme="lagoon"] .current {
+  color: var(--text);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="lagoon"] .history-item .res {
+  color: var(--text);
+  text-shadow: none;
+}
+
+[data-theme="lagoon"] .display {
+  background-color: var(--l-display);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.7), transparent 50%);
+  box-shadow: inset 0 0 22px rgba(8, 109, 117, 0.10);
+}
+
+[data-theme="lagoon"] .graph-title,
+[data-theme="lagoon"] .cas-label,
+[data-theme="lagoon"] .graph-section h3 {
+  color: var(--accent);
+  text-shadow: none;
+}
+
+[data-theme="lagoon"] .graph-section h3::before {
+  background: var(--l-marker);
+}
+
+[data-theme="lagoon"] .convert-result {
+  background: var(--l-result-bg);
+  color: var(--l-result-text);
+  text-shadow: none;
+}
+
+[data-theme="lagoon"] .convert-hint {
+  background: var(--l-hint-bg);
+  color: var(--l-hint-text);
+}
+
+[data-theme="lagoon"] .convert-swap {
+  background: var(--op);
+  color: var(--op-text);
+}
+
+[data-theme="lagoon"] .cas-go {
+  background: var(--l-solid-bg);
+  color: var(--l-solid-text);
+}
+
+[data-theme="lagoon"] .cas-note::before {
+  color: var(--l-marker);
+}
+
+[data-theme="lagoon"] .history-head .back {
+  background: var(--l-solid-bg);
+  color: var(--l-solid-text);
+}
+
+[data-theme="lagoon"] .fx-refresh {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+[data-theme="lagoon"] #values-table th {
+  background: var(--l-result-bg);
+  color: var(--l-result-text);
+}
+
+[data-theme="lagoon"] .fn-toggle {
+  background: var(--key);
+}
+
+[data-theme="lagoon"] .graph-canvas-wrap,
+[data-theme="lagoon"] .graph-section,
+[data-theme="lagoon"] .history-panel,
+[data-theme="lagoon"] .table-panel,
+[data-theme="lagoon"] .cas-result {
+  background: var(--l-panel);
+  box-shadow: inset 0 0 22px rgba(142, 214, 214, 0.14);
+}
+
+[data-theme="lagoon"] .graph-controls :where(button:not(.fn-swatch):not(.fn-toggle):not(.fn-delete):not(.template-btn):not(.add-function-btn)) {
+  background: var(--l-solid-bg);
+  color: var(--l-solid-text);
+  border-color: var(--l-solid-bg);
+}
+
+[data-theme="lagoon"] .graph-controls :where(button:not(.fn-swatch):not(.fn-toggle):not(.fn-delete):not(.template-btn):not(.add-function-btn)):hover {
+  filter: drop-shadow(0 0 8px rgba(8, 109, 117, 0.30));
+}
+
+[data-theme="lagoon"] .graph-key-hint kbd {
+  background: var(--key);
+}
+
+[data-theme="lagoon"] ::-webkit-scrollbar-track { background: var(--l-display); }
+[data-theme="lagoon"] ::-webkit-scrollbar-thumb {
+  background: var(--l-scroll-thumb);
+  border-color: var(--border);
+}
+[data-theme="lagoon"] ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+[data-theme="lagoon"] { scrollbar-color: var(--accent) var(--l-display); }

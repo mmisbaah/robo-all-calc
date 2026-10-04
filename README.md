@@ -86,8 +86,8 @@ Notes:
 - Undo / redo (`Ctrl+Z` / `Ctrl+Y`) for operand edits and history reuse
 - Unit converter (⇄): **19 categories, 300+ units** (see below)
 - Thousands separators, exponent display for very large/small numbers, 15-digit input limit
-- Themes: **robotic** (default), dark, OLED-black, light; high-contrast toggle;
-  adjustable density (key size)
+- Themes: **robotic** (default), **lagoon**, dark, OLED-black, light; high-contrast
+  toggle; adjustable density (key size)
 - English/Japanese UI (`L` key or toolbar button)
 - Keyboard support and clipboard paste (numbers or full expressions like `(2+3)*4`)
 - Accessible: ARIA labels, live-region display, visible focus rings
@@ -117,6 +117,32 @@ Text contrast was measured rather than eyeballed: the main keys sit at 13.8:1,
 operators 9.0:1, body text 16.4:1 and muted text 5.5:1. The robot theme's red
 `--danger` is `#e11d48` specifically because white on it measures 4.7:1, where
 brighter reds only reach 3.2–3.8:1.
+
+### Lagoon theme
+
+The atollingo.com brand palette with the same robotic instrumentation. Every
+colour is lifted verbatim from the brand (`OceanHub`, `app/globals.css`, whose
+`CNAME` is `atollingo.com`): ink `#123e52`, teal `#086d75`, mint `#e2f5ef`, coral
+`#b3422b`, sand `#fff5d9`, line `#c4ddd7`, focus `#ad421e`.
+
+They are used **unaltered**, because that palette was designed for a light
+background and this theme is light. A dark lagoon would have needed the brand
+hues lifted: coral on a near-black card measures 2.93:1 and teal 2.71:1. As
+shipped, the lowest measured pair is 5.63:1.
+
+What changes from the robotic theme: the technical grid becomes water caustics,
+the CRT scanlines become a faint ripple, the equals key takes brand sand on
+coral, and the display sweep reads as a sonar pass.
+
+**Structure is shared, not duplicated.** The robotic component rules are scoped
+to `[data-look="tech"]`, which `app.js` sets for any robotic theme. Colour stays
+per-theme in variable blocks, so a third robotic variant is one palette rather
+than a copy of ~600 lines of geometry.
+
+Lagoon surfaces that high contrast must reach — the display, the equals key, the
+memory badge, solid buttons, panels — all go through `--l-*` role variables, and
+`[data-hc="on"]` redefines every one. A literal colour there would have silently
+ignored the toggle, which is exactly the bug that appeared during this work.
 
 ### Graphing (📈)
 - **Horizontal layout**: on screens wider than 720px the graph canvas sits beside a
