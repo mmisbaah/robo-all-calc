@@ -7,6 +7,7 @@ import io
 import os
 import re
 import sys
+from html import unescape as html_unescape
 
 # Resolve relative to this file so the check works in any checkout, on any
 # platform, and in CI.
@@ -84,6 +85,37 @@ def main():
     missing_keys = sorted(used - en_keys)
     if missing_keys:
         print('MISSING i18n KEYS: %s' % ', '.join(missing_keys))
+        problems += 1
+
+    # 6. An aria-label must contain the button's own visible text
+    #    (axe `label-content-name-mismatch`).
+    #
+    #    This went unnoticed for a long time because the 30 scientific-pad
+    #    buttons ship inside a `hidden` section, so audits skipped them until
+    #    someone switched scientific mode on. Checking the source catches it
+    #    regardless of what is visible at load time.
+    #
+    #    Only buttons with a genuine *text* label are checked. A button whose
+    #    content is just an icon (the toolbar's emoji) has no visible text for
+    #    the name to match, and axe correctly ignores those.
+    mismatched = []
+    for m in re.finditer(r'<button\b([^>]*)>([^<]*)</button>', html, re.S):
+        attrs, visible = m.group(1), html_unescape(m.group(2)).strip()
+        label_match = re.search(r'aria-label="([^"]*)"', attrs)
+        if not label_match:
+            continue
+        if not visible:
+            continue
+        # Skip icon-only content: no letter or digit means it is a glyph.
+        if not re.search(r'[0-9A-Za-z]', visible):
+            continue
+        label = html_unescape(label_match.group(1)).strip()
+        if not label.lower().startswith(visible.lower()):
+            mismatched.append('%r labelled %r' % (visible, label))
+    if mismatched:
+        print('ARIA LABEL DOES NOT CONTAIN VISIBLE TEXT:')
+        for item in mismatched:
+            print('    ' + item)
         problems += 1
 
     print('ids in html: %d | js refs: %d | i18n keys used: %d' %

@@ -21,7 +21,9 @@ jobs:
       - name: Encoding check
         run: python tools/check_encoding.py
       - name: HTML structure check
-        run: python tools/check_html.py
+        run: |
+          python tools/check_html.py
+          python tools/selftest_check_html_labels.py
       - name: Undefined-reference check (plus self-test)
         run: |
           python tools/check_js_refs.py
