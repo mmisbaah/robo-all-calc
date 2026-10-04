@@ -85,6 +85,17 @@
 
   /* Plot colors per app theme. */
   const GRAPH_THEMES = {
+    robot: {
+      bgColor: '#050d13',
+      gridColor: 'rgba(0, 217, 255, 0.10)',
+      axisColor: '#35e6ff',
+      labelColor: '#5f93a6',
+      crosshairColor: 'rgba(0, 217, 255, 0.45)',
+      panelBg: 'rgba(10, 20, 27, 0.95)',
+      panelBorder: 'rgba(0, 217, 255, 0.28)',
+      panelText: '#d6f6ff',
+      panelMuted: '#5f93a6',
+    },
     dark: {
       bgColor: '#16161f',
       gridColor: '#2d2d44',
@@ -125,6 +136,8 @@
   function applyGraphTheme() {
     if (!grapher) return;
     const t = document.documentElement.getAttribute('data-theme');
+    // Note: an unknown theme silently borrows the dark palette. When adding a
+    // theme, add a matching GRAPH_THEMES entry too, or the plot will not match.
     grapher.setColors(GRAPH_THEMES[t] || GRAPH_THEMES.dark);
   }
 

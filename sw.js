@@ -1,22 +1,22 @@
 /* Service worker: cache-first app shell with background refresh. */
-const CACHE_NAME = 'calculator-v31';
+const CACHE_NAME = 'calculator-v36';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=31',
-  './js/calculator.js?v=31',
-  './js/app.js?v=31',
-  './js/grapher.js?v=31',
-  './js/grapher-ui.js?v=31',
-  './js/grapher-math.js?v=31',
-  './js/units.js?v=31',
-  './js/currency.js?v=31',
-  './js/currency-names.js?v=31',
-  './js/i18n.js?v=31',
-  './js/symbolic.js?v=31',
-  './js/cas-solve.js?v=31',
-  './js/cas-worker.js?v=31',
-  './vendor/nerdamer.js?v=31',
+  './styles.css?v=36',
+  './js/calculator.js?v=36',
+  './js/app.js?v=36',
+  './js/grapher.js?v=36',
+  './js/grapher-ui.js?v=36',
+  './js/grapher-math.js?v=36',
+  './js/units.js?v=36',
+  './js/currency.js?v=36',
+  './js/currency-names.js?v=36',
+  './js/i18n.js?v=36',
+  './js/symbolic.js?v=36',
+  './js/cas-solve.js?v=36',
+  './js/cas-worker.js?v=36',
+  './vendor/nerdamer.js?v=36',
   './manifest.json',
   './icons/icon.svg',
   './icons/icon-192.png',
@@ -63,6 +63,8 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) return;
 
+  const isNavigation = event.request.mode === 'navigate';
+
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
@@ -70,7 +72,15 @@ self.addEventListener('fetch', (event) => {
       // A navigation with a query string (?v=…, a bookmarked parameter) will
       // not match the cached entry, because Cache API matching includes the
       // search string. Retry ignoring the query before giving up.
-      return caches.match(event.request, { ignoreSearch: true }).then((loose) => {
+      //
+      // Only for navigations. Applying this to assets would let
+      // styles.css?v=<anything> be answered with the cached styles.css?v=<old>,
+      // which silently defeats version cache-busting.
+      const retry = isNavigation
+        ? caches.match(event.request, { ignoreSearch: true })
+        : Promise.resolve(undefined);
+
+      return retry.then((loose) => {
         if (loose) return loose;
 
         return fetch(event.request)
@@ -83,7 +93,7 @@ self.addEventListener('fetch', (event) => {
           })
           .catch(function () {
             // Last resort for an offline navigation: serve the app shell.
-            if (event.request.mode === 'navigate') {
+            if (isNavigation) {
               return caches.match('./index.html').then(function (shell) {
                 return shell || new Response(
                   '<!doctype html><meta charset="utf-8">'

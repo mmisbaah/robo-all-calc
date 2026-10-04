@@ -69,6 +69,43 @@
   --border: rgba(255, 255, 255, 0.08);
 }
 
+/* Robotic / futuristic. Placed before the [data-hc="on"] block on purpose:
+   that block shares the same specificity, so being later lets high contrast
+   override these colours for any theme. */
+[data-theme="robot"] {
+  --page-grad-1: #04121a;
+  --page-grad-2: #0a0618;
+  --card: #0a141b;
+  --display-bg: #050d13;
+  --text: #d6f6ff;
+  --muted: #5f93a6;
+  --key: #101f28;
+  --key-text: #cbeeff;
+  --fn: #0d2b2c;
+  --fn-text: #46e0c8;
+  --op: #0f3242;
+  --op-text: #35e6ff;
+  --accent: #00d9ff;
+  --accent-text: #001318;
+  /* #e11d48 rather than a lighter red: white on it is 4.70:1, which clears
+     WCAG AA. The brighter reds used elsewhere measure 3.2-3.8:1. */
+  --danger: #e11d48;
+  --panel: #0b1820;
+  --hover: #16303d;
+  --focus: #7ff4ff;
+  --shadow: rgba(0, 0, 0, 0.75);
+  --border: rgba(0, 217, 255, 0.22);
+
+  /* robot-only accents */
+  --r-cyan: #00d9ff;
+  --r-amber: #ffb020;
+  --r-font: 'Consolas', 'SF Mono', 'Roboto Mono', 'Menlo', 'DejaVu Sans Mono', monospace;
+  /* Chamfered corners. clip-path and box-shadow cannot be combined, so glowing
+     elements use filter: drop-shadow() instead, which follows the clip. */
+  --r-chamfer: polygon(9px 0, 100% 0, 100% calc(100% - 9px), calc(100% - 9px) 100%, 0 100%, 0 9px);
+  --r-chamfer-sm: polygon(5px 0, 100% 0, 100% calc(100% - 5px), calc(100% - 5px) 100%, 0 100%, 0 5px);
+}
+
 /* High contrast overrides — applied for any theme when data-hc="on" */
 [data-hc="on"] {
   --card: #000000;
@@ -1253,4 +1290,588 @@ button:focus-visible,
   .calculator { padding: 10px; }
   .pad button { padding: 12px 0; font-size: 16px; }
   .current { font-size: 28px; }
+}
+
+/* ============================================================
+   ROBOTIC / FUTURISTIC THEME — component styling
+   ============================================================
+   Two constraints shaped this block:
+
+   1. Every colour here comes from a custom property, so the global
+      [data-hc="on"] high-contrast override still wins on top of it
+      (that block sits earlier in the file and shares specificity).
+   2. clip-path and box-shadow are mutually exclusive: a clipped
+      element's outer shadow is discarded. Glowing chamfered elements
+      therefore use filter: drop-shadow(), which follows the clip.
+   ============================================================ */
+
+[data-theme="robot"] body {
+  font-family: var(--r-font);
+  background-color: var(--page-grad-1);
+  background-image:
+    linear-gradient(rgba(0, 217, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 217, 255, 0.05) 1px, transparent 1px),
+    radial-gradient(ellipse at 50% -10%, rgba(0, 217, 255, 0.14), transparent 62%),
+    linear-gradient(165deg, var(--page-grad-1) 0%, var(--page-grad-2) 100%);
+  background-size: 26px 26px, 26px 26px, 100% 100%, 100% 100%;
+  background-attachment: fixed;
+}
+
+/* CRT scanlines over the whole viewport. Above every panel so the effect is
+   uniform; pointer-events:none keeps the UI fully interactive. */
+[data-theme="robot"] body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0 2px,
+    rgba(0, 0, 0, 0.13) 2px 4px
+  );
+}
+
+/* Card: near-square corners plus four corner brackets drawn as background
+   gradients, which avoids extra DOM and survives the clip. */
+[data-theme="robot"] .calculator {
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  background-color: var(--card);
+  background-image:
+    linear-gradient(var(--r-cyan), var(--r-cyan)),
+    linear-gradient(var(--r-cyan), var(--r-cyan)),
+    linear-gradient(var(--r-cyan), var(--r-cyan)),
+    linear-gradient(var(--r-cyan), var(--r-cyan)),
+    linear-gradient(var(--r-cyan), var(--r-cyan)),
+    linear-gradient(var(--r-cyan), var(--r-cyan)),
+    linear-gradient(var(--r-cyan), var(--r-cyan)),
+    linear-gradient(var(--r-cyan), var(--r-cyan)),
+    linear-gradient(180deg, rgba(0, 217, 255, 0.07), transparent 32%);
+  background-repeat: no-repeat;
+  background-position:
+    top left, top left, top right, top right,
+    bottom left, bottom left, bottom right, bottom right,
+    0 0;
+  background-size:
+    16px 1px, 1px 16px, 16px 1px, 1px 16px,
+    16px 1px, 1px 16px, 16px 1px, 1px 16px,
+    100% 100%;
+  box-shadow:
+    inset 0 0 46px rgba(0, 0, 0, 0.55),
+    0 0 22px rgba(0, 217, 255, 0.10),
+    0 18px 50px var(--shadow);
+}
+
+/* ---------------- toolbar ---------------- */
+[data-theme="robot"] .tool {
+  clip-path: var(--r-chamfer-sm);
+  border: 1px solid var(--border);
+  background: var(--key);
+  font-family: var(--r-font);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+[data-theme="robot"] .tool:hover {
+  filter: none;
+  color: var(--r-cyan);
+  border-color: var(--r-cyan);
+}
+
+[data-theme="robot"] .tool[aria-pressed="true"] {
+  background: var(--op);
+  color: var(--op-text);
+  border-color: var(--r-cyan);
+  box-shadow: inset 0 0 12px rgba(0, 217, 255, 0.30);
+}
+
+[data-theme="robot"] .tool-group + .tool-group {
+  border-left: 1px dashed var(--border);
+}
+
+/* The key-size button reads as a text glyph; uppercasing turns "Aa" into "AA",
+   which loses its meaning. */
+[data-theme="robot"] #btn-density { text-transform: none; }
+
+/* ---------------- display ---------------- */
+[data-theme="robot"] .display {
+  position: relative;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background-color: var(--display-bg);
+  background-image: linear-gradient(180deg, rgba(0, 217, 255, 0.06), transparent 45%);
+  box-shadow: inset 0 0 26px rgba(0, 217, 255, 0.10);
+  overflow: hidden;
+}
+
+/* Slow sweep, like a refreshing readout. */
+[data-theme="robot"] .display::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -45%;
+  height: 45%;
+  background: linear-gradient(180deg, transparent, rgba(0, 217, 255, 0.12), transparent);
+  animation: robot-sweep 7s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes robot-sweep {
+  to { top: 105%; }
+}
+
+[data-theme="robot"] .current {
+  font-family: var(--r-font);
+  font-weight: 500;
+  color: var(--text);
+  text-shadow: 0 0 12px rgba(0, 217, 255, 0.45);
+  letter-spacing: 0.02em;
+}
+
+[data-theme="robot"] .history-line {
+  font-family: var(--r-font);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+[data-theme="robot"] .mem-badge {
+  clip-path: var(--r-chamfer-sm);
+  border-radius: 0;
+  background: var(--r-amber);
+  color: #20140a;
+  font-family: var(--r-font);
+}
+
+/* ---------------- keys ---------------- */
+[data-theme="robot"] .pad button {
+  clip-path: var(--r-chamfer);
+  border: 1px solid var(--border);
+  background-color: var(--key);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 55%);
+  color: var(--key-text);
+  font-family: var(--r-font);
+  letter-spacing: 0.02em;
+}
+
+[data-theme="robot"] .pad button:hover {
+  filter: drop-shadow(0 0 7px rgba(0, 217, 255, 0.50));
+  border-color: var(--r-cyan);
+  color: #ffffff;
+}
+
+[data-theme="robot"] .pad button:active { filter: brightness(1.35); }
+
+[data-theme="robot"] .pad button.op {
+  background-color: var(--op);
+  background-image: linear-gradient(180deg, rgba(0, 217, 255, 0.16), transparent 60%);
+  color: var(--op-text);
+}
+
+[data-theme="robot"] .pad button.equals {
+  background-color: var(--r-amber);
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.30), transparent 65%);
+  border-color: var(--r-amber);
+  color: #1c1206;
+  font-weight: 700;
+}
+
+[data-theme="robot"] .pad button.equals:hover {
+  filter: drop-shadow(0 0 10px rgba(255, 176, 32, 0.75));
+  border-color: #ffd27a;
+}
+
+[data-theme="robot"] .pad button.danger {
+  background-color: var(--danger);
+  border-color: var(--danger);
+  color: #ffffff;
+}
+
+[data-theme="robot"] .pad.sci button.fn {
+  background-color: var(--fn);
+  background-image: linear-gradient(180deg, rgba(70, 224, 200, 0.16), transparent 60%);
+  color: var(--fn-text);
+}
+
+/* Transparent border keeps the row from shifting when the key lights up. */
+[data-theme="robot"] .pad.memory button.mem {
+  clip-path: var(--r-chamfer-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font-family: var(--r-font);
+}
+
+[data-theme="robot"] .pad.memory button.mem:hover {
+  background: var(--key);
+  border-color: var(--border);
+  color: var(--op-text);
+}
+
+/* ---------------- inputs & selects ---------------- */
+[data-theme="robot"] .fn-text,
+[data-theme="robot"] .fn-mode,
+[data-theme="robot"] .fn-t,
+[data-theme="robot"] .table-step-label input,
+[data-theme="robot"] .range-row input,
+[data-theme="robot"] .integrate-row input {
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  background-color: var(--display-bg);
+  color: var(--text);
+  font-family: var(--r-font);
+}
+
+[data-theme="robot"] .fn-text:focus,
+[data-theme="robot"] .fn-mode:focus,
+[data-theme="robot"] .fn-t:focus,
+[data-theme="robot"] .table-step-label input:focus,
+[data-theme="robot"] .range-row input:focus,
+[data-theme="robot"] .integrate-row input:focus {
+  border-color: var(--r-cyan);
+  box-shadow: 0 0 0 1px var(--r-cyan), 0 0 14px rgba(0, 217, 255, 0.30);
+  outline: none;
+}
+
+/* Native dropdown lists render with OS colours unless told otherwise. */
+[data-theme="robot"] .fn-mode option,
+[data-theme="robot"] .fn-text option {
+  background: var(--card);
+  color: var(--text);
+}
+
+[data-theme="robot"] .fn-input-row {
+  border: 1px solid transparent;
+  background: var(--display-bg);
+}
+
+[data-theme="robot"] .fn-input-row:hover {
+  border-color: var(--border);
+  background: var(--hover);
+}
+
+/* ---------------- panels ---------------- */
+[data-theme="robot"] .history-panel,
+[data-theme="robot"] .table-panel {
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.45), 0 10px 40px var(--shadow);
+}
+
+[data-theme="robot"] .history-head {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--r-font);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 14px;
+}
+
+[data-theme="robot"] .history-head button {
+  clip-path: var(--r-chamfer-sm);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: var(--key);
+  color: var(--muted);
+  font-family: var(--r-font);
+  text-transform: uppercase;
+  /* Uppercase plus letter-spacing makes these labels wider than the flex row
+     can spare, and shrink was wrapping "← Back" onto two lines. */
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+[data-theme="robot"] .history-head .back {
+  background: var(--op);
+  color: var(--op-text);
+  border-color: var(--r-cyan);
+  font-weight: 700;
+}
+
+[data-theme="robot"] .history-item {
+  border-radius: 2px;
+  border: 1px solid transparent;
+  font-family: var(--r-font);
+}
+
+[data-theme="robot"] .history-item:hover {
+  background: var(--hover);
+  border-color: var(--border);
+}
+
+[data-theme="robot"] .history-item .res {
+  color: var(--text);
+  text-shadow: 0 0 10px rgba(0, 217, 255, 0.30);
+}
+
+[data-theme="robot"] #values-table th {
+  background: var(--key);
+  color: var(--op-text);
+  font-family: var(--r-font);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ---------------- converter ---------------- */
+[data-theme="robot"] .convert-result {
+  clip-path: var(--r-chamfer-sm);
+  border-radius: 0;
+  border: 1px solid var(--r-cyan);
+  background: var(--op);
+  color: var(--op-text);
+  font-family: var(--r-font);
+  text-shadow: 0 0 10px rgba(0, 217, 255, 0.45);
+}
+
+[data-theme="robot"] .convert-swap {
+  border-radius: 0;
+  clip-path: polygon(50% 0, 100% 25%, 100% 75%, 50% 100%, 0 75%, 0 25%);
+  border: 1px solid var(--r-cyan);
+  background: var(--op);
+  color: var(--op-text);
+}
+
+[data-theme="robot"] .convert-swap:hover {
+  background: var(--hover);
+  filter: drop-shadow(0 0 8px rgba(0, 217, 255, 0.6));
+}
+
+[data-theme="robot"] .convert-hint {
+  background: var(--display-bg);
+  border-left: 2px solid var(--r-amber);
+  color: var(--op-text);
+  font-family: var(--r-font);
+}
+
+[data-theme="robot"] .fx-status {
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  background: var(--display-bg);
+  font-family: var(--r-font);
+}
+
+[data-theme="robot"] .fx-refresh {
+  border-radius: 0;
+  clip-path: var(--r-chamfer-sm);
+  border: 1px solid var(--r-cyan);
+  color: var(--r-cyan);
+  font-family: var(--r-font);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ---------------- symbolic solver ---------------- */
+[data-theme="robot"] .cas-go {
+  clip-path: var(--r-chamfer-sm);
+  border-radius: 0;
+  border: 1px solid var(--r-cyan);
+  background: var(--accent);
+  font-family: var(--r-font);
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+}
+
+[data-theme="robot"] .cas-go:hover {
+  filter: drop-shadow(0 0 10px rgba(0, 217, 255, 0.55));
+}
+
+[data-theme="robot"] .cas-example {
+  clip-path: var(--r-chamfer-sm);
+  border-radius: 0;
+  background: var(--key);
+  font-family: var(--r-font);
+}
+
+[data-theme="robot"] .cas-example:hover {
+  background: var(--hover);
+  color: var(--r-cyan);
+}
+
+[data-theme="robot"] .cas-result {
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  background: var(--display-bg);
+}
+
+[data-theme="robot"] .cas-label {
+  font-family: var(--r-font);
+  color: var(--r-cyan);
+  letter-spacing: 0.12em;
+}
+
+/* Math stays in a serif face: it aids reading of fractions and exponents,
+   which a monospace grid would make harder to scan. */
+[data-theme="robot"] .cas-value {
+  color: var(--text);
+  text-shadow: 0 0 12px rgba(0, 217, 255, 0.25);
+}
+
+[data-theme="robot"] .cas-note {
+  font-family: var(--r-font);
+}
+
+[data-theme="robot"] .cas-note::before {
+  content: '\25B8';
+  color: var(--r-amber);
+}
+
+/* ---------------- graph view ---------------- */
+[data-theme="robot"] #graph-view .toolbar button {
+  clip-path: var(--r-chamfer-sm);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: var(--key);
+  color: var(--muted);
+  font-family: var(--r-font);
+}
+
+[data-theme="robot"] #graph-view .toolbar button:hover {
+  filter: none;
+  color: var(--r-cyan);
+  border-color: var(--r-cyan);
+}
+
+[data-theme="robot"] #graph-view .toolbar .back {
+  background: var(--op);
+  color: var(--op-text);
+  border-color: var(--r-cyan);
+  font-weight: 700;
+}
+
+[data-theme="robot"] .graph-title {
+  font-family: var(--r-font);
+  text-transform: uppercase;
+  letter-spacing: 0.10em;
+  font-size: 15px;
+  color: var(--r-cyan);
+  text-shadow: 0 0 12px rgba(0, 217, 255, 0.35);
+}
+
+[data-theme="robot"] .graph-canvas-wrap {
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--display-bg);
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="robot"] #graph-canvas {
+  border-radius: 0;
+}
+
+[data-theme="robot"] .graph-section {
+  border-radius: 2px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="robot"] .graph-section h3 {
+  font-family: var(--r-font);
+  color: var(--r-cyan);
+  letter-spacing: 0.14em;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 8px;
+}
+
+[data-theme="robot"] .graph-section h3::before {
+  width: 10px;
+  height: 10px;
+  background: var(--r-amber);
+  border-radius: 0;
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+[data-theme="robot"] .fn-toggle,
+[data-theme="robot"] .fn-delete,
+[data-theme="robot"] .add-function-btn,
+[data-theme="robot"] .template-btn {
+  clip-path: var(--r-chamfer-sm);
+  border-radius: 0;
+  font-family: var(--r-font);
+}
+
+[data-theme="robot"] .fn-toggle {
+  border: 1px solid var(--border);
+  background: var(--key);
+}
+
+[data-theme="robot"] .fn-toggle:hover {
+  filter: none;
+  border-color: var(--r-cyan);
+  color: var(--r-cyan);
+}
+
+[data-theme="robot"] .fn-delete {
+  border: 1px solid var(--danger);
+  background: transparent;
+}
+
+[data-theme="robot"] .add-function-btn {
+  border: 1px dashed var(--border);
+  background: transparent;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+[data-theme="robot"] .add-function-btn:hover:not(:disabled) {
+  border-color: var(--r-cyan);
+  color: var(--r-cyan);
+  background: var(--key);
+}
+
+[data-theme="robot"] .template-btn {
+  border: 1px solid var(--border);
+  background: var(--key);
+}
+
+[data-theme="robot"] .template-btn:hover {
+  border-color: var(--r-cyan);
+  color: var(--r-cyan);
+}
+
+/* Section action buttons (Find Root, Integrate, ...). */
+[data-theme="robot"] .graph-controls :where(button:not(.fn-swatch):not(.fn-toggle):not(.fn-delete):not(.template-btn):not(.add-function-btn)) {
+  clip-path: var(--r-chamfer-sm);
+  border: 1px solid var(--r-cyan);
+  border-radius: 0;
+  background: var(--op);
+  color: var(--op-text);
+  font-family: var(--r-font);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  box-shadow: none;
+}
+
+[data-theme="robot"] .graph-controls :where(button:not(.fn-swatch):not(.fn-toggle):not(.fn-delete):not(.template-btn):not(.add-function-btn)):hover {
+  filter: drop-shadow(0 0 9px rgba(0, 217, 255, 0.55));
+  transform: none;
+}
+
+[data-theme="robot"] .result {
+  border-radius: 2px;
+  font-family: var(--r-font);
+}
+
+/* ---------------- scrollbars ---------------- */
+[data-theme="robot"] ::-webkit-scrollbar { width: 10px; height: 10px; }
+[data-theme="robot"] ::-webkit-scrollbar-track { background: var(--display-bg); }
+[data-theme="robot"] ::-webkit-scrollbar-thumb {
+  background: var(--op);
+  border: 1px solid var(--border);
+}
+[data-theme="robot"] ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+[data-theme="robot"] {
+  scrollbar-color: var(--accent) var(--display-bg);
+  scrollbar-width: thin;
+}
+
+/* ---------------- motion preferences ---------------- */
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="robot"] .display::after { animation: none; display: none; }
+  [data-theme="robot"] .pad button:active,
+  [data-theme="robot"] .template-btn:hover { transform: none; }
 }

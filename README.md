@@ -56,18 +56,44 @@ otherwise leave the app with no offline cache at all.
 - Undo / redo (`Ctrl+Z` / `Ctrl+Y`) for operand edits and history reuse
 - Unit converter (⇄): **19 categories, 300+ units** (see below)
 - Thousands separators, exponent display for very large/small numbers, 15-digit input limit
-- Themes: dark, OLED-black, light; high-contrast toggle; adjustable density (key size)
+- Themes: **robotic** (default), dark, OLED-black, light; high-contrast toggle;
+  adjustable density (key size)
 - English/Japanese UI (`L` key or toolbar button)
 - Keyboard support and clipboard paste (numbers or full expressions like `(2+3)*4`)
 - Accessible: ARIA labels, live-region display, visible focus rings
 - JSON backup: export/import all data (history, memory, settings, graph functions)
+
+### Robotic theme
+
+The default look: chamfered key geometry, cyan/amber instrumentation on near-black,
+a CRT scanline veil, corner brackets on the card, a slowly sweeping display readout,
+and a monospace interface. It applies to every section — calculator, converter,
+solver, graph and history.
+
+It is built entirely from custom properties, so:
+
+- the high-contrast toggle still overrides its colours, and
+- the other three themes are byte-for-byte unchanged.
+
+Two implementation notes worth knowing before editing it:
+
+- `clip-path` and `box-shadow` cannot be combined — a clipped element loses its
+  outer shadow. Glowing chamfered elements use `filter: drop-shadow()`, which
+  follows the clip.
+- The graph canvas has its own palette in `GRAPH_THEMES` (`js/grapher-ui.js`).
+  A theme with no entry there silently falls back to dark, so add both together.
+
+Text contrast was measured rather than eyeballed: the main keys sit at 13.8:1,
+operators 9.0:1, body text 16.4:1 and muted text 5.5:1. The robot theme's red
+`--danger` is `#e11d48` specifically because white on it measures 4.7:1, where
+brighter reds only reach 3.2–3.8:1.
 
 ### Graphing (📈)
 - **Horizontal layout**: on screens wider than 720px the graph canvas sits beside a
   scrollable controls column; scientific mode places the function pad beside the keypad.
   Both stack vertically on narrow screens.
 - **Theme-aware plot**: canvas, grid, axes, legend, and cursor readout follow the
-  dark/OLED/light app theme.
+  active app theme (robotic/dark/OLED/light).
 - **Formula management**: up to 8 functions, add/delete, color cycle, visibility
   toggle, live preview (200 ms debounce), invalid-expression highlight, persisted.
 - **Function modes**: cartesian `y=f(x)`, polar `r=f(θ)`, parametric `x(t),y(t)`
@@ -207,7 +233,7 @@ Behaviour:
 | `Ctrl+Z` / `Ctrl+Y` | Undo / redo |
 | `H` | Toggle history panel |
 | `F` | Toggle scientific mode |
-| `T` | Toggle theme |
+| `T` | Cycle theme |
 | `G` | Open graph view |
 | `R` (in graph) | Reset view |
 | `U` | Toggle unit converter |
@@ -262,7 +288,7 @@ failure modes were hit in practice and were invisible to `node --check`.
 ```
 calculator/
 ├── index.html              # markup (calculator view + graph view + converter)
-├── styles.css              # themes (dark/OLED/light) + HC + density + layout
+├── styles.css              # themes (robotic/dark/OLED/light) + HC + density + layout
 ├── js/
 │   ├── calculator.js       # core engine (UMD: browser global + Node export)
 │   ├── app.js              # calculator UI wiring, keyboard, paste, theme, i18n

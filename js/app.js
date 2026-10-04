@@ -123,25 +123,41 @@
     setScientific(sciPadEl.hidden);
   });
 
-  const THEME_ORDER = ['dark', 'oled', 'light'];
-  const THEME_ICONS = { dark: '\uD83C\uDF19', oled: '\u26AB', light: '\u2600\uFE0F' };
+  /* Theme order is the cycle order of the theme button and the T shortcut. */
+  const THEME_ORDER = ['robot', 'dark', 'oled', 'light'];
+  const THEME_ICONS = {
+    robot: '\uD83E\uDD16',
+    dark: '\uD83C\uDF19',
+    oled: '\u26AB',
+    light: '\u2600\uFE0F',
+  };
+  const THEME_COLORS = {
+    robot: '#04121a',
+    dark: '#1e1e2e',
+    oled: '#000000',
+    light: '#ffffff',
+  };
+  const DEFAULT_THEME = 'robot';
 
   function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    themeBtnEl.textContent = THEME_ICONS[theme] || THEME_ICONS.dark;
-    themeBtnEl.setAttribute('aria-label', 'Switch theme (current: ' + theme + ')');
-    storage.set(LS_KEYS.theme, theme);
+    const next = THEME_ORDER.indexOf(theme) === -1 ? DEFAULT_THEME : theme;
+    document.documentElement.setAttribute('data-theme', next);
+    themeBtnEl.textContent = THEME_ICONS[next] || THEME_ICONS[DEFAULT_THEME];
+    themeBtnEl.setAttribute('aria-label', 'Switch theme (current: ' + next + ')');
+    storage.set(LS_KEYS.theme, next);
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', theme === 'light' ? '#ffffff' : theme === 'oled' ? '#000000' : '#1e1e2e');
-    window.dispatchEvent(new CustomEvent('app:theme', { detail: theme }));
+    if (meta) meta.setAttribute('content', THEME_COLORS[next] || THEME_COLORS[DEFAULT_THEME]);
+    window.dispatchEvent(new CustomEvent('app:theme', { detail: next }));
   }
   function currentTheme() {
-    return document.documentElement.getAttribute('data-theme') || 'dark';
+    return document.documentElement.getAttribute('data-theme') || DEFAULT_THEME;
   }
-  themeBtnEl.addEventListener('click', function () {
+  /** Advance to the next theme in the cycle; used by the button and the T key. */
+  function cycleTheme() {
     const i = THEME_ORDER.indexOf(currentTheme());
     applyTheme(THEME_ORDER[(i + 1) % THEME_ORDER.length]);
-  });
+  }
+  themeBtnEl.addEventListener('click', cycleTheme);
 
   /* ---------------- undo / redo ---------------- */
   const undoStack = [];
@@ -269,7 +285,7 @@
       setScientific(sciPadEl.hidden);
       return;
     } else if (k === 't' || k === 'T') {
-      applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+      cycleTheme();
       return;
     } else if (k === 'g' || k === 'G') {
       showGraph();
@@ -871,8 +887,9 @@
   });
 
   /* ---------------- init ---------------- */
-  const savedTheme = storage.get(LS_KEYS.theme);
-  applyTheme(savedTheme === 'light' || savedTheme === 'oled' ? savedTheme : 'dark');
+  // applyTheme() falls back to the default for anything unrecognised, so a
+  // stale or hand-edited value can never leave the app unthemed.
+  applyTheme(storage.get(LS_KEYS.theme));
   setScientific(storage.get(LS_KEYS.sci) === '1');
   setHistoryPanel(false, true); // keepFocus: don't steal focus on load
   setHighContrast(storage.get(LS_KEYS.hc) === '1');
