@@ -1,5 +1,4 @@
 """Scan project text files for mojibake introduced by PowerShell round-trips."""
-import glob
 import io
 import os
 import re
@@ -21,31 +20,48 @@ MOJIBAKE = re.compile(
     '|[\ufffd]'
 )
 
-# Legitimate non-ASCII that must NOT be flagged.
-ALLOW = set('\u00d7\u00f7\u00b0\u00b1\u00b7\u2190\u2192\u2191\u2193\u21b5\u21ba\u2318'
-            '\u25a0\u25b2\u25bc\u25c6\u25cb\u2600\u2601\u26ab\u2713\u2718\u2014'
-            '\u00e9\u00e8\u00ea\u00fc\u00f6\u00e4\u00f1\u00c7\u00b5\u00b0')
+# The project has ~40 text files. Scanning far fewer than this means the walk
+# found nothing, which must be treated as a failure rather than a clean bill of
+# health.
+MIN_FILES = 20
 
 
 def main():
     bad_total = 0
-    for path in glob.glob(ROOT + r'\**\*.*', recursive=True):
-        if 'node_modules' in path or '\\.' in path.split('\\')[-1]:
-            continue
-        if not path.lower().endswith(EXT):
-            continue
-        try:
-            with io.open(path, encoding='utf-8') as f:
-                text = f.read()
-        except Exception as exc:
-            print('UNREADABLE %s : %s' % (path, exc))
-            bad_total += 1
-            continue
-        for m in MOJIBAKE.finditer(text):
-            line = text.count('\n', 0, m.start()) + 1
-            snippet = text[max(0, m.start() - 45):m.start() + 25].replace('\n', ' ')
-            print('%s:%d  %r' % (path, line, snippet))
-            bad_total += 1
+    scanned = 0
+    for dirpath, dirnames, filenames in os.walk(ROOT):
+        # Skip dependencies and VCS metadata.
+        dirnames[:] = [d for d in dirnames
+                       if d not in ('node_modules', '.git', '__pycache__')]
+        for name in filenames:
+            if name.startswith('.'):
+                continue
+            if not name.lower().endswith(EXT):
+                continue
+            path = os.path.join(dirpath, name)
+            scanned += 1
+            try:
+                with io.open(path, encoding='utf-8') as f:
+                    text = f.read()
+            except Exception as exc:
+                print('UNREADABLE %s : %s' % (path, exc))
+                bad_total += 1
+                continue
+            for m in MOJIBAKE.finditer(text):
+                line = text.count('\n', 0, m.start()) + 1
+                snippet = text[max(0, m.start() - 45):m.start() + 25].replace('\n', ' ')
+                print('%s:%d  %r' % (path, line, snippet))
+                bad_total += 1
+
+    # A check that silently inspects nothing is worse than no check at all: a
+    # wrong ROOT would report "0 problems" while validating zero files, which is
+    # exactly what happened in CI before the paths were made relative.
+    print('---- files scanned: %d' % scanned)
+    if scanned < MIN_FILES:
+        print('FATAL: only %d files scanned (expected at least %d); '
+              'ROOT is probably wrong' % (scanned, MIN_FILES))
+        return 1
+
     print('---- suspicious sequences: %d' % bad_total)
     return 1 if bad_total else 0
 

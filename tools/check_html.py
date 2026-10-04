@@ -52,7 +52,7 @@ def main():
     ids_in_html = set(re.findall(r'\bid="([^"]+)"', html))
     wanted = set()
     for js in ('app.js', 'grapher-ui.js', 'grapher.js'):
-        path = ROOT + '\\js\\' + js
+        path = os.path.join(ROOT, 'js', js)
         with io.open(path, encoding='utf-8') as f:
             src = f.read()
         wanted |= set(re.findall(r"getElementById\('([^']+)'\)", src))
@@ -76,7 +76,7 @@ def main():
         problems += 1
 
     # 5. Every data-i18n key must exist in the dictionaries.
-    with io.open(ROOT + r'\js\i18n.js', encoding='utf-8') as f:
+    with io.open(os.path.join(ROOT, 'js', 'i18n.js'), encoding='utf-8') as f:
         i18n = f.read()
     en_block = i18n.split('en: {')[1].split('ja: {')[0]
     en_keys = set(re.findall(r"'([a-zA-Z]+\.[a-zA-Z]+)':", en_block))
