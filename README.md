@@ -314,7 +314,8 @@ browser to run everything.
 | `npm run check:html` | Tag balance, every JS-referenced id exists, no clipped attributes, i18n keys resolve |
 | `npm run check:refs` | Flags app identifiers used but never declared |
 | `npm run verify:units` | Prints a pass/fail line per unit conversion factor |
-| `npm run bump` | Bumps `?v=N` / `CACHE_NAME` for cache busting (UTF-8 safe) |
+| `npm run bump` | Stamps the cache-busting token from the asset contents |
+| `npm run check:version` | Fails if the stamped token no longer matches the assets |
 
 CI runs all of the above plus the live rate smoke test
 (`.github/workflows/test.yml`). The encoding and ref checks exist because both
@@ -354,10 +355,15 @@ calculator/
 
 ## Notes
 
-- After editing cached files run `npm run bump` — it rewrites every `?v=N` query
-  string in `index.html` and `CACHE_NAME` in `sw.js` atomically and UTF-8-safely.
-  Use the Python tooling rather than PowerShell text cmdlets, which mangle
-  multi-byte characters (this corrupted the file twice during development).
+- **Cache busting is derived from content, not a counter.** `npm run bump` hashes
+  `styles.css` and `js/*.js` and stamps the first 8 hex characters into every
+  `?v=` query in `index.html` and into `CACHE_NAME` in `sw.js`. This replaced a
+  hand-incremented number, which was a repeating source of stale-asset bugs: edit
+  the CSS, forget the bump, and the service worker quietly keeps serving the old
+  file. Now the token cannot go stale, and `npm run check:version` (also in CI)
+  fails if it ever does. Use the Python tooling rather than PowerShell text
+  cmdlets, which mangle multi-byte characters (this corrupted files twice during
+  development).
 - Rates are indicative reference rates for everyday use, not a dealing feed.
   Each source publishes its own terms; the app links no provider affiliation.
 - The graph expression compiler is a safe recursive-descent parser (no `eval` on

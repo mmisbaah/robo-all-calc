@@ -1,28 +1,45 @@
 /* Service worker: cache-first app shell with background refresh. */
-const CACHE_NAME = 'calculator-v38';
+const CACHE_NAME = 'calculator-vc6b6e16b';
 const ASSETS = [
   './',
   './index.html',
-  './styles.css?v=38',
-  './js/calculator.js?v=38',
-  './js/app.js?v=38',
-  './js/grapher.js?v=38',
-  './js/grapher-ui.js?v=38',
-  './js/grapher-math.js?v=38',
-  './js/units.js?v=38',
-  './js/currency.js?v=38',
-  './js/currency-names.js?v=38',
-  './js/i18n.js?v=38',
-  './js/symbolic.js?v=38',
-  './js/cas-solve.js?v=38',
-  './js/cas-worker.js?v=38',
-  './vendor/nerdamer.js?v=38',
+  './styles.css?v=c6b6e16b',
+  './js/calculator.js?v=c6b6e16b',
+  './js/app.js?v=c6b6e16b',
+  './js/grapher.js?v=c6b6e16b',
+  './js/grapher-ui.js?v=c6b6e16b',
+  './js/grapher-math.js?v=c6b6e16b',
+  './js/grapher-geometry.js?v=c6b6e16b',
+  './js/units.js?v=c6b6e16b',
+  './js/currency.js?v=c6b6e16b',
+  './js/currency-names.js?v=c6b6e16b',
+  './js/i18n.js?v=c6b6e16b',
+  './js/symbolic.js?v=c6b6e16b',
+  './js/cas-solve.js?v=c6b6e16b',
+  './js/cas-worker.js?v=c6b6e16b',
   './manifest.json',
+  './robots.txt',
   './icons/icon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
 ];
+
+/**
+ * Not precached: vendor/nerdamer.js.
+ *
+ * At 528 KB it was 63% of a first visit's 840 KB payload, yet the solver only
+ * needs it once someone opens the panel. Precaching it charged every visitor for
+ * a feature most never touch, so the first visit now costs about 312 KB.
+ *
+ * It is cached on demand instead. A dedicated worker's importScripts() request is
+ * not reliably routed through the fetch handler across browsers, so the page does
+ * it explicitly: symbolic.js posts {type:'cache-urls'} here the first time the
+ * solver reports ready, and the message handler below stores the bundle.
+ *
+ * Trade-off, stated plainly: solving offline now requires having opened the
+ * solver once while online. Everything else still works offline immediately.
+ */
 
 /**
  * Cache each asset independently.
@@ -41,6 +58,27 @@ function cacheAssets() {
     }));
   });
 }
+
+/**
+ * Cache the deferred CAS bundle once the page reports the solver is in use.
+ *
+ * Sent once, from symbolic.js, the first time the worker signals ready. Failures
+ * are logged and swallowed: not caching the bundle costs offline solving, it
+ * must never break the page.
+ */
+self.addEventListener('message', function (event) {
+  var msg = (event.data) || {};
+  if (msg.type !== 'cache-urls' || !Array.isArray(msg.urls)) return;
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(function (cache) {
+      return Promise.all(msg.urls.map(function (url) {
+        return cache.add(new Request(url, { cache: 'reload' })).catch(function (err) {
+          console.warn('[sw] deferred cache failed', url, err && err.message);
+        });
+      }));
+    })
+  );
+});
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

@@ -2,7 +2,7 @@
 <html lang="en" data-theme="robot">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#04121a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -12,7 +12,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/icon.svg">
 <link rel="manifest" href="manifest.json">
-<link rel="stylesheet" href="styles.css?v=38">
+<link rel="stylesheet" href="styles.css?v=c6b6e16b">
 </head>
 <body>
   <main class="calculator" aria-label="Calculator">
@@ -213,8 +213,15 @@
       </header>
 
       <div class="graph-canvas-wrap">
-        <canvas id="graph-canvas" width="700" height="500" aria-label="Function graph"></canvas>
+        <canvas id="graph-canvas" width="700" height="500" tabindex="0"
+                role="img"
+                aria-label="Function graph. Use the arrow keys to pan, plus and minus to zoom, and 0 to reset the view."
+                aria-describedby="graph-key-hint"></canvas>
       </div>
+      <p id="graph-key-hint" class="graph-key-hint">
+        Drag to pan &middot; scroll to zoom &middot; <kbd>&larr;</kbd><kbd>&rarr;</kbd><kbd>&uarr;</kbd><kbd>&darr;</kbd> pan
+        &middot; <kbd>+</kbd><kbd>&minus;</kbd> zoom &middot; <kbd>0</kbd> reset
+      </p>
 
       <section class="table-panel" id="table-panel" hidden aria-label="Values table">
         <div class="history-head">
@@ -291,16 +298,17 @@
 
   </main>
 
-  <script src="js/calculator.js?v=38"></script>
-  <script src="js/grapher-math.js?v=38"></script>
-  <script src="js/grapher.js?v=38"></script>
-  <script src="js/units.js?v=38"></script>
-  <script src="js/currency-names.js?v=38"></script>
-  <script src="js/currency.js?v=38"></script>
-  <script src="js/cas-solve.js?v=38"></script>
-  <script src="js/symbolic.js?v=38"></script>
-  <script src="js/i18n.js?v=38"></script>
-  <script src="js/app.js?v=38"></script>
-  <script src="js/grapher-ui.js?v=38"></script>
+  <script src="js/calculator.js?v=c6b6e16b"></script>
+  <script src="js/grapher-math.js?v=c6b6e16b"></script>
+  <script src="js/grapher-geometry.js?v=c6b6e16b"></script>
+  <script src="js/grapher.js?v=c6b6e16b"></script>
+  <script src="js/units.js?v=c6b6e16b"></script>
+  <script src="js/currency-names.js?v=c6b6e16b"></script>
+  <script src="js/currency.js?v=c6b6e16b"></script>
+  <script src="js/cas-solve.js?v=c6b6e16b"></script>
+  <script src="js/symbolic.js?v=c6b6e16b"></script>
+  <script src="js/i18n.js?v=c6b6e16b"></script>
+  <script src="js/app.js?v=c6b6e16b"></script>
+  <script src="js/grapher-ui.js?v=c6b6e16b"></script>
 </body>
 </html>

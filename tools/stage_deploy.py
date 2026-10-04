@@ -15,8 +15,12 @@ import shutil
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STAGE = os.path.join(ROOT, '.deploy')
 
-ITEMS = ['index.html', 'styles.css', 'sw.js', 'manifest.json',
+ITEMS = ['index.html', 'styles.css', 'sw.js', 'manifest.json', 'robots.txt',
          'icons', 'js', 'vendor', 'THIRD_PARTY.md']
+
+# robots.txt is included deliberately. Without it, the host's SPA fallback
+# answers /robots.txt with index.html as text/html, which crawlers reject —
+# Lighthouse flagged it as "robots.txt is not valid".
 
 # Keep attribution for the vendored CAS reachable from the deployed site.
 # Nothing here is a secret, but the deployment stays limited to what is needed

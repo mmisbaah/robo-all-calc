@@ -33,7 +33,6 @@ class Grapher {
    * @param {number} [options.xMax=10] - right edge of x range
    * @param {number} [options.yMin=-10] - bottom edge of y range
    * @param {number} [options.yMax=10] - top edge of y range
-   * @param {boolean} [options.autoScale=true] - auto-scale y to fit functions
    * @param {number} [options.gridStep=1] - grid line spacing
    * @param {string} [options.gridColor='#e5e7eb'] - grid color
    * @param {string} [options.axisColor='#374151'] - axis color
@@ -48,7 +47,6 @@ class Grapher {
     this.xMax = options.xMax != null ? options.xMax : 10;
     this.yMin = options.yMin != null ? options.yMin : -10;
     this.yMax = options.yMax != null ? options.yMax : 10;
-    this.autoScale = options.autoScale != null ? options.autoScale : true;
     this.gridStep = options.gridStep || 1;
     this.gridColor = options.gridColor || '#e5e7eb';
     this.axisColor = options.axisColor || '#374151';
@@ -155,6 +153,9 @@ class Grapher {
     this.canvas.addEventListener('pointercancel', (e) => this._onPointerUp(e));
     this.canvas.addEventListener('wheel', (e) => this._onWheel(e), { passive: false });
 
+    // Keyboard operation, so the plot is reachable without a pointer.
+    this.canvas.addEventListener('keydown', (e) => this._onKeyDown(e));
+
     // Hover readout. Only clears when no drag is in flight, so the cursor
     // value survives a drag that strays over the edge.
     this.canvas.addEventListener('pointerleave', (e) => this._onPointerLeave(e));
@@ -166,20 +167,32 @@ class Grapher {
     this.canvas.addEventListener('touchcancel', (e) => this._onTouchEnd(e));
   }
 
-  /* ---------------- coordinate transforms ---------------- */
+  /* ---------------- coordinate transforms ----------------
+   The maths itself lives in js/grapher-GrapherGeometry.js so it can be unit tested
+   without a canvas. These wrappers keep the existing call sites unchanged. */
 
   /** Convert math coords (x, y) to canvas pixels. */
   toPixel(x, y) {
-    const px = ((x - this.xMin) / (this.xMax - this.xMin)) * this.width;
-    const py = this.height - ((y - this.yMin) / (this.yMax - this.yMin)) * this.height;
-    return { x: px, y: py };
+    return GrapherGeometry.toPixel(this._range(), this.width, this.height, x, y);
   }
 
   /** Convert canvas pixels to math coords. */
   toMath(px, py) {
-    const x = this.xMin + (px / this.width) * (this.xMax - this.xMin);
-    const y = this.yMax - (py / this.height) * (this.yMax - this.yMin);
-    return { x, y };
+    return GrapherGeometry.toMath(this._range(), this.width, this.height, px, py);
+  }
+
+  /** The current viewport as a plain object the geometry helpers expect. */
+  _range() {
+    return { xMin: this.xMin, xMax: this.xMax, yMin: this.yMin, yMax: this.yMax };
+  }
+
+  /** Replace the viewport from a range object, keeping it numerically sane. */
+  _applyRange(range) {
+    const r = GrapherGeometry.clampRange(range);
+    this.xMin = r.xMin;
+    this.xMax = r.xMax;
+    this.yMin = r.yMin;
+    this.yMax = r.yMax;
   }
 
   /* ---------------- rendering ---------------- */
@@ -673,15 +686,9 @@ class Grapher {
    * Shared by the pointer and touch paths, which used to carry identical copies.
    */
   _panByFrom(dragStart, dragRangeStart, dx, dy) {
-    const xRange = dragRangeStart.xMax - dragRangeStart.xMin;
-    const yRange = dragRangeStart.yMax - dragRangeStart.yMin;
-    // Screen y grows downwards, math y grows upwards.
-    const xShift = -(dx / this.width) * xRange;
-    const yShift = (dy / this.height) * yRange;
-    this.xMin = dragRangeStart.xMin + xShift;
-    this.xMax = dragRangeStart.xMax + xShift;
-    this.yMin = dragRangeStart.yMin + yShift;
-    this.yMax = dragRangeStart.yMax + yShift;
+    this._applyRange(
+      GrapherGeometry.panByFrom(this._range(), dragRangeStart, this.width, this.height, dx, dy)
+    );
   }
 
   /** Pan the viewport by the drag delta accumulated since pointerdown. */
@@ -778,16 +785,64 @@ class Grapher {
     this.render();
   }
 
+  /**
+   * Keyboard equivalents for the pointer gestures, so the plot can be moved and
+   * zoomed without a mouse: arrows pan, +/- zoom about the centre, 0 resets.
+   * Shift makes a step finer for precise positioning.
+   */
+  _onKeyDown(e) {
+    const step = e.shiftKey ? 0.05 : 0.2;
+    let handled = true;
+
+    switch (e.key) {
+      case 'ArrowLeft':  this._nudgePan(-step, 0); break;
+      case 'ArrowRight': this._nudgePan(step, 0); break;
+      case 'ArrowUp':    this._nudgePan(0, step); break;
+      case 'ArrowDown':  this._nudgePan(0, -step); break;
+      case '+':
+      case '=':
+        // factor > 1 widens the visible range, i.e. zooms OUT. Matches
+        // grapher-ui's zoom-out button (1.4) and the wheel's 1.1.
+        this.zoom(1.2);
+        break;
+      case '-':
+      case '_':
+        this.zoom(1 / 1.2);
+        break;
+      case '0':
+      case 'Home':      this.resetView(); break;
+      default:           handled = false;
+    }
+
+    if (!handled) return;
+    // Stop the arrow keys scrolling the page and the canvas taking focus away.
+    e.preventDefault();
+    e.stopPropagation();
+    this.render();
+  }
+
+  /** Pan by a fraction of the visible span, using the same maths as a drag. */
+  _nudgePan(fractionX, fractionY) {
+    const r = this._range();
+    this._applyRange(GrapherGeometry.panByFrom(
+      r,
+      { xMin: r.xMin, xMax: r.xMax, yMin: r.yMin, yMax: r.yMax },
+      this.width,
+      this.height,
+      fractionX * this.width,
+      fractionY * this.height
+    ));
+  }
+
   _onWheel(e) {
     e.preventDefault();
     const pos = this._getEventPos(e);
     const math = this.toMath(pos.x, pos.y);
+    // deltaY > 0 (scroll down / pinch out) widens the range: zoom out.
     const factor = e.deltaY > 0 ? 1.1 : 0.9;
-
-    this.xMin = math.x - (math.x - this.xMin) * factor;
-    this.xMax = math.x + (this.xMax - math.x) * factor;
-    this.yMin = math.y - (math.y - this.yMin) * factor;
-    this.yMax = math.y + (this.yMax - math.y) * factor;
+    this._applyRange(
+      GrapherGeometry.zoomAt(this._range(), this.width, this.height, factor, math.x, math.y)
+    );
 
     this._updateCursorValues();
     this.render();
@@ -840,12 +895,14 @@ class Grapher {
           clientX: (pts[0].x + pts[1].x) / 2,
           clientY: (pts[0].y + pts[1].y) / 2,
         });
-        const math = this.toMath(center.x, center.y);
+        // Anchor against the range captured at pinch start, not the live one.
+        // The anchor is the math point under the fingers; deriving it from a
+        // range that this same gesture is still changing made it drift.
         const r = this._pinchStartRange;
-        this.xMin = math.x - (math.x - r.xMin) * factor;
-        this.xMax = math.x + (r.xMax - math.x) * factor;
-        this.yMin = math.y - (math.y - r.yMin) * factor;
-        this.yMax = math.y + (r.yMax - math.y) * factor;
+        const anchor = GrapherGeometry.toMath(r, this.width, this.height, center.x, center.y);
+        this._applyRange(
+          GrapherGeometry.zoomAt(r, this.width, this.height, factor, anchor.x, anchor.y)
+        );
       }
       this.render();
       return;
@@ -997,13 +1054,11 @@ class Grapher {
   setXRange(min, max) {
     this.xMin = min;
     this.xMax = max;
-    this.autoScale = false;
   }
 
   setYRange(min, max) {
     this.yMin = min;
     this.yMax = max;
-    this.autoScale = false;
   }
 
   resetView() {
@@ -1011,16 +1066,12 @@ class Grapher {
     this.xMax = 10;
     this.yMin = -10;
     this.yMax = 10;
-    this.autoScale = true;
   }
 
   zoom(factor, centerX, centerY) {
-    centerX = centerX != null ? centerX : (this.xMin + this.xMax) / 2;
-    centerY = centerY != null ? centerY : (this.yMin + this.yMax) / 2;
-    this.xMin = centerX - (centerX - this.xMin) * factor;
-    this.xMax = centerX + (this.xMax - centerX) * factor;
-    this.yMin = centerY - (centerY - this.yMin) * factor;
-    this.yMax = centerY + (this.yMax - centerY) * factor;
+    this._applyRange(
+      GrapherGeometry.zoomAt(this._range(), this.width, this.height, factor, centerX, centerY)
+    );
   }
 
   /** Bisection root-finding (delegates to GrapherMath). */

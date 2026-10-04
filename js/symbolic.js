@@ -414,6 +414,34 @@
 
   /* ---------------- direct (main-thread) fallback ---------------- */
 
+  /**
+   * Tell the service worker to cache the CAS bundle now that the solver has
+   * actually been used.
+   *
+   * nerdamer is 528 KB and deliberately not precached, so a first visit costs
+   * 312 KB rather than 840 KB for anyone who never opens the solver. Asking the
+   * worker to cache it here means that once someone HAS used the solver, the
+   * feature keeps working offline — which is what the offline guarantee needs
+   * to mean.
+   *
+   * Best effort: if there is no controller (first load, or file://) this is a
+   * no-op and the app simply has no offline cache, same as before.
+   */
+  let deferredCacheAsked = false;
+  function requestDeferredCasCache() {
+    if (deferredCacheAsked) return;
+    deferredCacheAsked = true;
+    try {
+      const sw = global.navigator && global.navigator.serviceWorker;
+      if (!sw) return;
+      const controller = sw.controller;
+      if (!controller) return;
+      controller.postMessage({ type: 'cache-urls', urls: ['./vendor/nerdamer.js'] });
+    } catch (err) {
+      // Nothing to do; offline caching is best effort.
+    }
+  }
+
   let directCas = null;
   let directPromise = null;
 
@@ -496,6 +524,7 @@
       const msg = event.data || {};
       if (msg.ready) {
         if (readyPromise && readyPromise.resolveReady) readyPromise.resolveReady(true);
+        requestDeferredCasCache();
         return;
       }
       const entry = pending.get(msg.id);

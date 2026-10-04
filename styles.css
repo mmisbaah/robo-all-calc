@@ -120,7 +120,10 @@
   --op-text: #00ffff;
   --accent: #ffff00;
   --accent-text: #000000;
-  --danger: #ff6666;
+  /* #e11d48 rather than a light red: the danger key paints white text on this,
+     and white on a light red measures only ~2.9:1 — the least legible control in
+     the mode whose whole purpose is legibility. */
+  --danger: #e11d48;
   --panel: #000000;
   --hover: #333333;
   --focus: #ffff00;
@@ -935,6 +938,33 @@ button:focus-visible,
 
 /* Suppress the text caret that a stray drag would otherwise leave behind. */
 #graph-canvas:active { user-select: none; }
+
+/* Keyboard hint under the plot, and a visible focus ring now that the canvas
+   is reachable by Tab. */
+.graph-key-hint {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.9;
+  text-align: center;
+}
+
+.graph-key-hint kbd {
+  font-family: inherit;
+  font-size: 11px;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 0 5px;
+  margin: 0 1px;
+  background: var(--key);
+  color: var(--text);
+}
+
+#graph-canvas:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
 
 .graph-controls {
   display: grid;
