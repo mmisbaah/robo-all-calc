@@ -258,6 +258,11 @@ Behaviour:
 
 ## Keyboard shortcuts
 
+These apply when focus is **not** in a text field. Typing in any field — the
+symbolic solver's problem box, the converter, a graph function — is left to that
+field, so `=` can be typed to build an equation and digits do not leak into the
+calculator behind the panel. `Escape` remains global so it always closes a panel.
+
 | Key | Action |
 | --- | --- |
 | `0-9` `.` | Digits / decimal point |

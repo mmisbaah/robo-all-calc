@@ -33,7 +33,9 @@ jobs:
       - name: Syntax check
         run: npm run check
       - name: Unit tests
-        run: npm test
+        run: |
+          npm test
+          python tools/selftest_keyboard_target.py
       - name: Type check
         run: npx tsc
       - name: Live exchange-rate smoke test

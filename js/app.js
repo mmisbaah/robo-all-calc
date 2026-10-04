@@ -241,6 +241,20 @@
     '^': '^',
   };
 
+  /**
+   * Fallback if keyboard-target.js is ever missing from the cache. Degrading to
+   * "no field owns its keys" restores the old behaviour, which is far better
+   * than throwing on every keystroke and killing the keypad entirely.
+   */
+  function fieldOwnsKeys(target, key) {
+    if (typeof KeyboardTarget === 'undefined') return false;
+    try {
+      return KeyboardTarget.shouldDeferToField(target, key);
+    } catch (err) {
+      return false;
+    }
+  }
+
   document.addEventListener('keydown', function (e) {
     if (e.ctrlKey || e.metaKey) {
       if (e.key === 'z' || e.key === 'Z') { e.preventDefault(); undo(); }
@@ -248,6 +262,14 @@
       return;
     }
     if (e.altKey) return;
+
+    // The focused field wins. Escape still closes an open panel, matching the
+    // behaviour when focus is elsewhere.
+    if (fieldOwnsKeys(e.target, e.key)) {
+      if (e.key === 'Escape' && historyOpen) { e.preventDefault(); setHistoryPanel(false); }
+      return;
+    }
+
     const k = e.key;
     let flash = null;
 

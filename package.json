@@ -22,7 +22,7 @@
     "vanilla-js"
   ],
   "scripts": {
-    "test": "node tests/calculator.test.js && node tests/grapher-math.test.js && node tests/grapher-geometry.test.js && node tests/units.test.js && node tests/units-factors.test.js && node tests/currency.test.js && node tests/symbolic.test.js && node tests/cas.test.js && node tests/i18n.test.js",
+    "test": "node tests/calculator.test.js && node tests/grapher-math.test.js && node tests/grapher-geometry.test.js && node tests/units.test.js && node tests/units-factors.test.js && node tests/currency.test.js && node tests/symbolic.test.js && node tests/cas.test.js && node tests/i18n.test.js && node tests/keyboard-target.test.js",
     "test:live": "node tests/currency.test.js --live",
     "check:encoding": "python tools/check_encoding.py",
     "check:html": "python tools/check_html.py && python tools/selftest_check_html_labels.py",
@@ -30,7 +30,7 @@
     "verify:units": "node tools/verify_units.js",
     "bump": "python tools/stamp_version.py",
     "check:version": "python tools/stamp_version.py --check",
-    "check": "node --check js/app.js && node --check js/calculator.js && node --check js/grapher.js && node --check js/grapher-math.js && node --check js/grapher-geometry.js && node --check js/grapher-ui.js && node --check js/i18n.js && node --check js/units.js && node --check js/currency.js && node --check js/currency-names.js && node --check js/symbolic.js && node --check js/cas-solve.js && node --check js/cas-worker.js && node --check sw.js",
+    "check": "node --check js/app.js && node --check js/calculator.js && node --check js/grapher.js && node --check js/grapher-math.js && node --check js/grapher-geometry.js && node --check js/grapher-ui.js && node --check js/i18n.js && node --check js/keyboard-target.js && node --check js/units.js && node --check js/currency.js && node --check js/currency-names.js && node --check js/symbolic.js && node --check js/cas-solve.js && node --check js/cas-worker.js && node --check sw.js",
     "check:types": "tsc",
     "deploy:stage": "python tools/stage_deploy.py",
     "deploy": "npm run deploy:stage && wrangler pages deploy .deploy --project-name robocalc-atollingo --branch main"
