@@ -7,7 +7,7 @@
     "type": "git",
     "url": "git+https://github.com/mmisbaah/robo-all-calc.git"
   },
-  "homepage": "https://github.com/mmisbaah/robo-all-calc#readme",
+  "homepage": "https://robocalc.atollingo.com",
   "bugs": {
     "url": "https://github.com/mmisbaah/robo-all-calc/issues"
   },
@@ -30,7 +30,9 @@
     "verify:units": "node tools/verify_units.js",
     "bump": "python tools/bump_version.py",
     "check": "node --check js/app.js && node --check js/calculator.js && node --check js/grapher.js && node --check js/grapher-math.js && node --check js/grapher-ui.js && node --check js/i18n.js && node --check js/units.js && node --check js/currency.js && node --check js/currency-names.js && node --check js/symbolic.js && node --check js/cas-solve.js && node --check js/cas-worker.js && node --check sw.js",
-    "check:types": "tsc"
+    "check:types": "tsc",
+    "deploy:stage": "python tools/stage_deploy.py",
+    "deploy": "npm run deploy:stage && wrangler pages deploy .deploy --project-name robocalc-atollingo --branch main"
   },
   "devDependencies": {
     "typescript": "^7.0.2"

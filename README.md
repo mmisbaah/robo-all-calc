@@ -43,6 +43,36 @@ The service worker caches each asset individually rather than with
 `cache.addAll`, because `addAll` is all-or-nothing: one failed request would
 otherwise leave the app with no offline cache at all.
 
+## Deployment
+
+Live at **https://robocalc.atollingo.com** (Cloudflare Pages, custom domain on the
+`atollingo.com` zone). The canonical fallback is
+`https://robocalc-atollingo.pages.dev`.
+
+Redeploy after a change:
+
+```bash
+npm run deploy          # stages .deploy/ then uploads it
+```
+
+`npm run deploy` runs `tools/stage_deploy.py` first. That step matters: deploying
+the repository root would upload `node_modules` (32 MB) along with the test suite
+and CI scripts. It copies only what the browser loads — `index.html`,
+`styles.css`, `sw.js`, `manifest.json`, `icons/`, `js/`, `vendor/` — which comes
+to 23 files and about 0.82 MB.
+
+Notes:
+
+- **Pages, not Workers.** The app is entirely static and has no build step.
+  Pages also serves it over HTTPS, which the service worker requires to register.
+- **DNS is a manual step.** The Pages project cannot create its own CNAME, so
+  `robocalc.atollingo.com` needs a `CNAME` record pointing at
+  `robocalc-atollingo.pages.dev`. Wrangler's OAuth token carries Pages write but
+  not DNS write, so this has to be added in the Cloudflare dashboard. Until it
+  exists the domain stays `pending` and does not resolve, while the
+  `pages.dev` URL works fine.
+- Service workers are per-origin, so the live site's offline cache is entirely
+  separate from any localhost copy.
 
 ## Features
 

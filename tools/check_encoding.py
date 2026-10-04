@@ -30,9 +30,11 @@ def main():
     bad_total = 0
     scanned = 0
     for dirpath, dirnames, filenames in os.walk(ROOT):
-        # Skip dependencies and VCS metadata.
+        # Skip dependencies, VCS metadata, and the deployment staging copy
+        # (.deploy holds byte-identical duplicates of files already scanned,
+        # so including it just double-reports).
         dirnames[:] = [d for d in dirnames
-                       if d not in ('node_modules', '.git', '__pycache__')]
+                       if d not in ('node_modules', '.git', '__pycache__', '.deploy')]
         for name in filenames:
             if name.startswith('.'):
                 continue

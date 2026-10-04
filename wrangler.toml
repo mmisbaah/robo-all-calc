@@ -1,0 +1,3 @@
+name = "robocalc-atollingo"
+compatibility_date = "2026-10-04"
+pages_build_output_dir = ".deploy"
