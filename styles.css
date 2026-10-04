@@ -917,12 +917,24 @@ button:focus-visible,
   width: 100%;
   height: auto;
   max-height: 60vh;
-  cursor: crosshair;
+  /* Press-and-drag moves the plot, so advertise that with a grab hand.
+     Inspect mode keeps the crosshair, which signals "read a value here".
+     grapher.js keeps data-mode in step with interactionMode. */
+  cursor: grab;
   border-radius: 8px;
   touch-action: none; /* prevent browser handling of touch events */
   position: relative;
   z-index: 1;
 }
+
+#graph-canvas[data-mode="inspect"] { cursor: crosshair; }
+
+/* While a drag is in flight the hand is closed, which is the standard
+   "you are moving this" signal. */
+#graph-canvas.is-panning { cursor: grabbing; }
+
+/* Suppress the text caret that a stray drag would otherwise leave behind. */
+#graph-canvas:active { user-select: none; }
 
 .graph-controls {
   display: grid;

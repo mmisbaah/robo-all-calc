@@ -790,16 +790,13 @@
   /* ---------------- pan / inspect toggle ---------------- */
 
   function toggleInteractionMode() {
-    grapher.interactionMode = grapher.interactionMode === 'pan' ? 'inspect' : 'pan';
+    const next = grapher.interactionMode === 'pan' ? 'inspect' : 'pan';
+    grapher.setInteractionMode(next);
     const inspect = grapher.interactionMode === 'inspect';
     modeBtnEl.textContent = (typeof I18n !== 'undefined')
       ? I18n.translate(document.documentElement.lang === 'ja' ? 'ja' : 'en', inspect ? 'graph.modeInspect' : 'graph.modePan')
       : (inspect ? '⌖ Inspect' : '✥ Pan');
     modeBtnEl.setAttribute('aria-pressed', String(inspect));
-    if (inspect && grapher.tangentX == null) {
-      grapher.tangentX = (parseFloat(rangeXMinEl.value) + parseFloat(rangeXMaxEl.value)) / 2;
-    }
-    grapher.render();
   }
 
   window.addEventListener('app:lang', () => {

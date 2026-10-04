@@ -99,13 +99,21 @@ brighter reds only reach 3.2–3.8:1.
 - **Function modes**: cartesian `y=f(x)`, polar `r=f(θ)`, parametric `x(t),y(t)`
   with configurable `t` range.
 - **Quick-add templates**: sin, cos, tan, x², x³, √x, 1/x, ln, log, eˣ, |x|, x·sin(x)
-- Interactive: **pan** (drag), **zoom** (wheel / +/- buttons / pinch), reset view,
-  plus a **pan vs inspect** mode toggle (inspect shows cursor + tangent line).
+- **Press and hold to move the plot.** Click or tap the canvas and drag: the
+  graph follows your pointer in both axes. The drag uses Pointer Events with
+  `setPointerCapture`, so it keeps going when the pointer strays outside the
+  canvas and only ends when you let go. The cursor shows which behaviour a drag
+  will have — a grab hand to pan, a crosshair in inspect mode, and a closed hand
+  while a drag is in flight. Only the primary button drags, so right-clicking
+  never moves the plot.
+- Interactive: **zoom** (wheel / +/- buttons / pinch), reset view, plus a
+  **pan vs inspect** mode toggle (inspect shows cursor + tangent line, and a drag
+  scrubs the readout instead of panning).
 - Analysis tools: **Find Root**, **Derivative**, **Integrate** (shades the area),
   **Intersections**, **Extrema**, **Tangent line** at a draggable point.
 - **Values table**: samples of all functions over the visible range (step configurable).
 - **Export PNG**: download the current plot as an image.
-- Touch support for mobile pan/zoom.
+- Touch support: one finger pans, two fingers pinch-zoom.
 
 ### PWA
 - Manifest, service worker (offline capable), SVG + PNG icons — installable.

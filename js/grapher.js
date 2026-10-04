@@ -78,7 +78,10 @@ class Grapher {
     this.shadeRange = null;   // {a, b, fnIndex} highlight area under the active function
     this.showTangent = false; // draw tangent at cursor
     this.tangentX = null;     // math-x where the tangent is drawn (null => follow cursor)
-    this.interactionMode = 'pan'; // 'pan' | 'inspect'
+    this.interactionMode = options.interactionMode || 'pan'; // 'pan' | 'inspect'
+    // Mirror the mode onto the canvas so CSS can show a drag affordance
+    // (grab hand to pan, crosshair to inspect).
+    this.canvas.dataset.mode = this.interactionMode;
     this._touches = new Map();   // active touch points for pinch-zoom
     this._pinchStartDist = null;
 
@@ -138,16 +141,29 @@ class Grapher {
   }
 
   _bindEvents() {
-    this.canvas.addEventListener('mousedown', (e) => this._onMouseDown(e));
-    this.canvas.addEventListener('mousemove', (e) => this._onMouseMove(e));
-    this.canvas.addEventListener('mouseup', (e) => this._onMouseUp(e));
-    this.canvas.addEventListener('mouseleave', (e) => this._onMouseLeave(e));
+    // Pointer Events for mouse and pen. setPointerCapture (below) keeps a drag
+    // alive when the pointer leaves the canvas, which plain mouse events could
+    // not: 'mouseleave' fired and abandoned the pan half way through.
+    //
+    // Touch is deliberately excluded here (pointerType === 'touch') because the
+    // touch handlers below own that path, including two-finger pinch-zoom.
+    // The canvas sets `touch-action: none`, so touch does emit pointer events
+    // and would otherwise be handled twice.
+    this.canvas.addEventListener('pointerdown', (e) => this._onPointerDown(e));
+    this.canvas.addEventListener('pointermove', (e) => this._onPointerMove(e));
+    this.canvas.addEventListener('pointerup', (e) => this._onPointerUp(e));
+    this.canvas.addEventListener('pointercancel', (e) => this._onPointerUp(e));
     this.canvas.addEventListener('wheel', (e) => this._onWheel(e), { passive: false });
+
+    // Hover readout. Only clears when no drag is in flight, so the cursor
+    // value survives a drag that strays over the edge.
+    this.canvas.addEventListener('pointerleave', (e) => this._onPointerLeave(e));
 
     // Touch support
     this.canvas.addEventListener('touchstart', (e) => this._onTouchStart(e), { passive: false });
     this.canvas.addEventListener('touchmove', (e) => this._onTouchMove(e), { passive: false });
     this.canvas.addEventListener('touchend', (e) => this._onTouchEnd(e));
+    this.canvas.addEventListener('touchcancel', (e) => this._onTouchEnd(e));
   }
 
   /* ---------------- coordinate transforms ---------------- */
@@ -638,15 +654,86 @@ class Grapher {
     };
   }
 
-  _onMouseDown(e) {
-    e.preventDefault();
-    const pos = this._getEventPos(e);
+  /**
+   * Switch between dragging the viewport ('pan') and scrubbing the cursor
+   * readout ('inspect'). Keeps the canvas data-mode in step so the cursor
+   * shows which behaviour a drag will have.
+   */
+  setInteractionMode(mode) {
+    this.interactionMode = mode === 'inspect' ? 'inspect' : 'pan';
+    this.canvas.dataset.mode = this.interactionMode;
+    if (this.interactionMode === 'inspect') {
+      this.tangentX = (this.xMin + this.xMax) / 2;
+    }
+    this.render();
+  }
+
+  /**
+   * Shift the viewport by a pixel delta measured from the drag start.
+   * Shared by the pointer and touch paths, which used to carry identical copies.
+   */
+  _panByFrom(dragStart, dragRangeStart, dx, dy) {
+    const xRange = dragRangeStart.xMax - dragRangeStart.xMin;
+    const yRange = dragRangeStart.yMax - dragRangeStart.yMin;
+    // Screen y grows downwards, math y grows upwards.
+    const xShift = -(dx / this.width) * xRange;
+    const yShift = (dy / this.height) * yRange;
+    this.xMin = dragRangeStart.xMin + xShift;
+    this.xMax = dragRangeStart.xMax + xShift;
+    this.yMin = dragRangeStart.yMin + yShift;
+    this.yMax = dragRangeStart.yMax + yShift;
+  }
+
+  /** Pan the viewport by the drag delta accumulated since pointerdown. */
+  _applyDrag(pos) {
+    this._panByFrom(this.dragStart, this.dragRangeStart,
+      pos.x - this.dragStart.x, pos.y - this.dragStart.y);
+  }
+
+  /** Record the viewport at drag start so repeated moves cannot accumulate drift. */
+  _beginDrag(pos) {
     this.dragging = true;
     this.dragStart = pos;
     this.dragRangeStart = { xMin: this.xMin, xMax: this.xMax, yMin: this.yMin, yMax: this.yMax };
+    this.canvas.classList.add('is-panning');
   }
 
-  _onMouseMove(e) {
+  _endDrag() {
+    this.dragging = false;
+    this.dragStart = null;
+    this.dragRangeStart = null;
+    this.canvas.classList.remove('is-panning');
+  }
+
+  /** True for pointer events that the touch handlers own instead. */
+  _isTouchPointer(e) {
+    return e.pointerType === 'touch';
+  }
+
+  _onPointerDown(e) {
+    if (this._isTouchPointer(e)) return;
+    // Only the primary button drags; a right-click should not move the plot.
+    if (e.button !== 0) return;
+    e.preventDefault();
+    const pos = this._getEventPos(e);
+    this._beginDrag(pos);
+    if (this.interactionMode === 'inspect') {
+      const math = this.toMath(pos.x, pos.y);
+      this.cursor = { x: math.x, y: math.y, fx: null, df: null };
+      this._updateCursorValues();
+      this.cursor.y = this.cursor.fx != null ? this.cursor.fx : math.y;
+      this.tangentX = math.x;
+      this.render();
+    }
+    // Capture so the drag continues if the pointer leaves the canvas, and the
+    // matching pointerup arrives even when released outside it.
+    if (this.canvas.setPointerCapture) {
+      try { this.canvas.setPointerCapture(e.pointerId); } catch (err) { /* not fatal */ }
+    }
+  }
+
+  _onPointerMove(e) {
+    if (this._isTouchPointer(e)) return;
     const pos = this._getEventPos(e);
 
     if (this.dragging && this.interactionMode === 'inspect') {
@@ -657,16 +744,7 @@ class Grapher {
       this.cursor.y = this.cursor.fx != null ? this.cursor.fx : math.y;
       this.tangentX = math.x;
     } else if (this.dragging) {
-      const dx = pos.x - this.dragStart.x;
-      const dy = pos.y - this.dragStart.y;
-      const xRange = this.dragRangeStart.xMax - this.dragRangeStart.xMin;
-      const yRange = this.dragRangeStart.yMax - this.dragRangeStart.yMin;
-      const xShift = -(dx / this.width) * xRange;
-      const yShift = (dy / this.height) * yRange;
-      this.xMin = this.dragRangeStart.xMin + xShift;
-      this.xMax = this.dragRangeStart.xMax + xShift;
-      this.yMin = this.dragRangeStart.yMin + yShift;
-      this.yMax = this.dragRangeStart.yMax + yShift;
+      this._applyDrag(pos);
     } else {
       // Update cursor
       const math = this.toMath(pos.x, pos.y);
@@ -681,14 +759,21 @@ class Grapher {
     this.render();
   }
 
-  _onMouseUp(e) {
-    this.dragging = false;
-    this.dragStart = null;
-    this.dragRangeStart = null;
+  _onPointerUp(e) {
+    if (this._isTouchPointer(e)) return;
+    if (this.canvas.releasePointerCapture && this.canvas.hasPointerCapture
+        && this.canvas.hasPointerCapture(e.pointerId)) {
+      try { this.canvas.releasePointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+    }
+    this._endDrag();
+    this.render();
   }
 
-  _onMouseLeave(e) {
-    this.dragging = false;
+  _onPointerLeave(e) {
+    if (this._isTouchPointer(e)) return;
+    // Keep the drag (and its captured pointer) alive; only drop the hover
+    // readout when the pointer is simply moving away.
+    if (this.dragging) return;
     this.cursor = null;
     this.render();
   }
@@ -724,9 +809,7 @@ class Grapher {
     }
     if (this._touches.size === 1) {
       const pos = this._getEventPos(e.touches[0]);
-      this.dragging = true;
-      this.dragStart = pos;
-      this.dragRangeStart = { xMin: this.xMin, xMax: this.xMax, yMin: this.yMin, yMax: this.yMax };
+      this._beginDrag(pos);
       if (this.interactionMode === 'inspect') {
         const math = this.toMath(pos.x, pos.y);
         this.cursor = { x: math.x, y: math.y, fx: null, df: null };
@@ -745,10 +828,14 @@ class Grapher {
     }
 
     if (this._touches.size === 2 && this._pinchStartDist) {
+      this.canvas.classList.remove('is-panning');
       const pts = [...this._touches.values()];
       const dist = Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
       if (dist > 0) {
-        const factor = this._pinchStartDist / dist;
+        // The factor scales the visible range, so >1 means zoom out — matching
+        // _onWheel below. Fingers apart (dist > start) must therefore zoom out,
+        // which means dividing by the start distance, not dividing it.
+        const factor = dist / this._pinchStartDist;
         const center = this._getEventPos({
           clientX: (pts[0].x + pts[1].x) / 2,
           clientY: (pts[0].y + pts[1].y) / 2,
@@ -773,16 +860,7 @@ class Grapher {
         this.cursor.y = this.cursor.fx != null ? this.cursor.fx : math.y;
         this.tangentX = math.x;
       } else {
-        const dx = pos.x - this.dragStart.x;
-        const dy = pos.y - this.dragStart.y;
-        const xRange = this.dragRangeStart.xMax - this.dragRangeStart.xMin;
-        const yRange = this.dragRangeStart.yMax - this.dragRangeStart.yMin;
-        const xShift = -(dx / this.width) * xRange;
-        const yShift = (dy / this.height) * yRange;
-        this.xMin = this.dragRangeStart.xMin + xShift;
-        this.xMax = this.dragRangeStart.xMax + xShift;
-        this.yMin = this.dragRangeStart.yMin + yShift;
-        this.yMax = this.dragRangeStart.yMax + yShift;
+        this._applyDrag(pos);
       }
       this.render();
     }
@@ -795,9 +873,7 @@ class Grapher {
       this._pinchStartRange = null;
     }
     if (this._touches.size === 0) {
-      this.dragging = false;
-      this.dragStart = null;
-      this.dragRangeStart = null;
+      this._endDrag();
     }
   }
 
