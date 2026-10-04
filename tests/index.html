@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculator — Core Tests</title>
+<style>
+  body { font-family: Consolas, Menlo, monospace; background: #16161f; color: #e5e7eb; padding: 24px; }
+  h1 { font-size: 18px; margin-bottom: 16px; color: #a5b4fc; }
+  pre { white-space: pre-wrap; font-size: 14px; line-height: 1.7; }
+  .pass { color: #4ade80; }
+  .fail { color: #f87171; font-weight: bold; }
+</style>
+</head>
+<body>
+  <h1>Calculator — unit tests</h1>
+  <div id="output"></div>
+  <!-- Cache-busted so edits to tests are picked up on reload. -->
+  <script src="../js/calculator.js?v=27"></script>
+  <script>window.__testResults = {};</script>
+  <script src="../js/grapher-math.js?v=27"></script>
+  <script src="../js/units.js?v=27"></script>
+  <script src="../js/currency-names.js?v=27"></script>
+  <script src="../js/currency.js?v=27"></script>
+  <script src="../js/i18n.js?v=27"></script>
+  <!-- symbolic.js resolves its worker URL from document.currentScript, which is
+       this runner; symbolic.test.js only exercises the pure parts. -->
+  <script src="../js/cas-solve.js?v=29"></script>
+  <script src="../js/symbolic.js?v=29"></script>
+  <script src="calculator.test.js?v=27"></script>
+  <script src="grapher-math.test.js?v=27"></script>
+  <script src="units.test.js?v=27"></script>
+  <script src="units-factors.test.js?v=27"></script>
+  <script src="currency.test.js?v=27"></script>
+  <script src="symbolic.test.js?v=27"></script>
+  <script src="cas.test.js?v=27"></script>
+  <script src="i18n.test.js?v=27"></script>
+</body>
+</html>

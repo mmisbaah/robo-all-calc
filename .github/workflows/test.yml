@@ -1,0 +1,42 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: npm install
+      - name: Encoding check
+        run: python tools/check_encoding.py
+      - name: HTML structure check
+        run: python tools/check_html.py
+      - name: Undefined-reference check (plus self-test)
+        run: |
+          python tools/check_js_refs.py
+          python tools/selftest_js_refs.py
+      - name: Syntax check
+        run: npm run check
+      - name: Unit tests
+        run: npm test
+      - name: Type check
+        run: npx tsc
+      - name: Live exchange-rate smoke test
+        run: npm run test:live
+      - name: CAS bundle present
+        run: |
+          test -f vendor/nerdamer.js
+          node -e "const n=require('./vendor/nerdamer.js'); \
+            if(String(n.solve('2x+3=7','x'))!=='{2}') { \
+              console.error('vendored CAS bundle is stale or broken'); process.exit(1); }"

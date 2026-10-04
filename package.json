@@ -1,0 +1,41 @@
+{
+  "name": "calculator",
+  "version": "1.0.0",
+  "description": "Vanilla-JS calculator with scientific mode, graphing, unit conversion, symbolic solving, and PWA support. No framework, no build step, works offline.",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mmisbaah/robo-all-calc.git"
+  },
+  "homepage": "https://github.com/mmisbaah/robo-all-calc#readme",
+  "bugs": {
+    "url": "https://github.com/mmisbaah/robo-all-calc/issues"
+  },
+  "keywords": [
+    "calculator",
+    "graphing",
+    "unit-conversion",
+    "symbolic-math",
+    "cas",
+    "pwa",
+    "offline",
+    "vanilla-js"
+  ],
+  "scripts": {
+    "test": "node tests/calculator.test.js && node tests/grapher-math.test.js && node tests/units.test.js && node tests/units-factors.test.js && node tests/currency.test.js && node tests/symbolic.test.js && node tests/cas.test.js && node tests/i18n.test.js",
+    "test:live": "node tests/currency.test.js --live",
+    "check:encoding": "python tools/check_encoding.py",
+    "check:html": "python tools/check_html.py",
+    "check:refs": "python tools/check_js_refs.py",
+    "verify:units": "node tools/verify_units.js",
+    "bump": "python tools/bump_version.py",
+    "check": "node --check js/app.js && node --check js/calculator.js && node --check js/grapher.js && node --check js/grapher-math.js && node --check js/grapher-ui.js && node --check js/i18n.js && node --check js/units.js && node --check js/currency.js && node --check js/currency-names.js && node --check js/symbolic.js && node --check js/cas-solve.js && node --check js/cas-worker.js && node --check sw.js",
+    "check:types": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
+  },
+  "dependencies": {
+    "nerdamer": "^2.0.0"
+  }
+}

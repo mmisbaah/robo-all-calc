@@ -1,0 +1,29 @@
+# Keep the repository's bytes stable across platforms.
+#
+# Without this, Git rewrites LF to CRLF on Windows checkouts, which makes every
+# file show as modified when a contributor switches between Windows and Linux,
+# and — more importantly here — would rewrite the vendored CAS bundle.
+
+# Normalise text files to LF in the repository, check them out as-is.
+* text=auto eol=lf
+
+# Shell/script-ish files that must stay executable-friendly.
+*.sh text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# The vendored CAS bundle must stay byte-identical to upstream so the Apache-2.0
+# attribution in THIRD_PARTY.md can be audited against the real file.
+# `-text` disables all end-of-line conversion and whitespace handling.
+vendor/** -text
+vendor/*.js -text
+
+# Binary assets: never diff or convert.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
